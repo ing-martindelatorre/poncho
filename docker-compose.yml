@@ -1,0 +1,68 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: poncho-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-poncho}
+      POSTGRES_USER: ${POSTGRES_USER:-poncho}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-poncho_dev_password}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - poncho_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build:
+      context: .
+    container_name: poncho-web
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://poncho:poncho_dev_password@db:5432/poncho?schema=public}
+      NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME:-Poncho}
+      UPLOAD_DIR: /app/uploads
+      HONORARIOS_RATE: ${HONORARIOS_RATE:-0.10}
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    volumes:
+      - poncho_uploads:/app/uploads
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  backup:
+    image: postgres:16-alpine
+    container_name: poncho-backup
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGHOST: db
+      PGDATABASE: ${POSTGRES_DB:-poncho}
+      PGUSER: ${POSTGRES_USER:-poncho}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-poncho_dev_password}
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-14}
+    volumes:
+      - poncho_backups:/backups
+      - ./scripts:/app/scripts:ro
+    command: >
+      sh -c "while true; do
+        sh /app/scripts/backup-postgres.sh;
+        sleep 86400;
+      done"
+
+volumes:
+  poncho_pgdata:
+  poncho_uploads:
+  poncho_backups:

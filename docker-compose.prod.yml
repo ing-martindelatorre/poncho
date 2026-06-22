@@ -1,0 +1,12 @@
+services:
+  db:
+    restart: always
+    ports: []
+
+  web:
+    restart: always
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+
+  backup:
+    restart: always
