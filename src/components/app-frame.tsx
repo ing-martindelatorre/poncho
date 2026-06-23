@@ -4,6 +4,7 @@ type AppFrameProps = {
   active:
     | "catalogs"
     | "dashboard"
+    | "imports"
     | "projects"
     | "weeks"
     | "work-items"
@@ -21,6 +22,7 @@ const navItems = [
   { key: "materials", href: "/projects", label: "Materiales" },
   { key: "photos", href: "/projects", label: "Fotos" },
   { key: "catalogs", href: "/catalogs", label: "Catalogos" },
+  { key: "imports", href: "/imports", label: "Importar" },
   { key: "users", href: "/users", label: "Usuarios" },
 ] as const;
 

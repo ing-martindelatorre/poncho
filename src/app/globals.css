@@ -481,6 +481,11 @@ h3 {
   margin-top: 16px;
 }
 
+.muted-copy {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
 .stacked-actions {
   display: grid;
   gap: 10px;

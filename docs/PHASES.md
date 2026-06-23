@@ -141,6 +141,17 @@ Objetivo:
 - exportacion PDF
 - exportacion CSV compatible con Excel
 
+## Fase 8.1: Importador
+
+Estado: completada.
+
+Objetivo:
+
+- importar resumen historico desde CSV guardado desde Excel
+- crear obras y semanas si no existen
+- registrar efectivo, facturado y pagos importados
+- ofrecer plantilla descargable
+
 ## Fase 9: Seguridad
 
 Estado: base completada.
