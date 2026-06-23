@@ -83,6 +83,9 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
         <a className="button ghost" href="/projects">
           Volver a obras
         </a>
+        <a className="button primary" href={`/projects/${project.id}/reports`}>
+          Reporte
+        </a>
       </header>
 
       <section className="metrics">

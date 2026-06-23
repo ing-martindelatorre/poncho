@@ -93,6 +93,8 @@ Objetivo:
 
 ## Fase 8: Reportes
 
+Estado: completada.
+
 Objetivo:
 
 - caratula semanal efectivo
