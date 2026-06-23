@@ -4,6 +4,7 @@ import { MoneyKind } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
+import { assertWeeklyPeriodOpen } from "@/lib/periods";
 
 function optionalString(value: FormDataEntryValue | null) {
   const text = String(value ?? "").trim();
@@ -70,6 +71,7 @@ export async function createWorkItem(formData: FormData) {
   const weeklyPeriodId = requiredString(formData.get("weeklyPeriodId"), "La semana");
   const volume = requiredDecimal(formData.get("volume"), "El volumen");
   const unitPrice = requiredDecimal(formData.get("unitPrice"), "El precio unitario");
+  await assertWeeklyPeriodOpen(weeklyPeriodId);
 
   await prisma.workItem.create({
     data: {
@@ -102,6 +104,7 @@ export async function updateWorkItem(formData: FormData) {
   const id = requiredString(formData.get("id"), "El destajo");
   const volume = requiredDecimal(formData.get("volume"), "El volumen");
   const unitPrice = requiredDecimal(formData.get("unitPrice"), "El precio unitario");
+  await assertWeeklyPeriodOpen(weeklyPeriodId);
 
   await prisma.workItem.update({
     data: {
@@ -132,6 +135,7 @@ export async function deleteWorkItem(formData: FormData) {
   const projectId = requiredString(formData.get("projectId"), "La obra");
   const weeklyPeriodId = requiredString(formData.get("weeklyPeriodId"), "La semana");
   const id = requiredString(formData.get("id"), "El destajo");
+  await assertWeeklyPeriodOpen(weeklyPeriodId);
 
   await prisma.workItem.delete({
     where: { id },

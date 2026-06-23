@@ -7,6 +7,7 @@ import { PhotoLinkType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
+import { assertWeeklyPeriodOpen } from "@/lib/periods";
 import { extensionFromMime, safeJoinUploadPath } from "@/lib/uploads";
 
 function optionalString(value: FormDataEntryValue | null) {
@@ -32,6 +33,7 @@ export async function createPhoto(formData: FormData) {
   const projectId = requiredString(formData.get("projectId"), "La obra");
   const weeklyPeriodId = requiredString(formData.get("weeklyPeriodId"), "La semana");
   const file = formData.get("photo");
+  await assertWeeklyPeriodOpen(weeklyPeriodId);
 
   if (!(file instanceof File) || file.size === 0) {
     throw new Error("La foto es obligatoria.");
@@ -74,6 +76,7 @@ export async function deletePhoto(formData: FormData) {
   const projectId = requiredString(formData.get("projectId"), "La obra");
   const weeklyPeriodId = requiredString(formData.get("weeklyPeriodId"), "La semana");
   const id = requiredString(formData.get("id"), "La foto");
+  await assertWeeklyPeriodOpen(weeklyPeriodId);
 
   const photo = await prisma.photo.delete({
     where: { id },

@@ -4,6 +4,7 @@ import { MoneyKind } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
+import { assertWeeklyPeriodOpen } from "@/lib/periods";
 
 function optionalString(value: FormDataEntryValue | null) {
   const text = String(value ?? "").trim();
@@ -79,6 +80,7 @@ export async function createLaborPayment(formData: FormData) {
   const projectId = requiredString(formData.get("projectId"), "La obra");
   const weeklyPeriodId = requiredString(formData.get("weeklyPeriodId"), "La semana");
   const rate = requiredDecimal(formData.get("rate"), "La tarifa");
+  await assertWeeklyPeriodOpen(weeklyPeriodId);
 
   await prisma.laborPayment.create({
     data: {
@@ -106,6 +108,7 @@ export async function updateLaborPayment(formData: FormData) {
   const weeklyPeriodId = requiredString(formData.get("weeklyPeriodId"), "La semana");
   const id = requiredString(formData.get("id"), "El pago de nomina");
   const rate = requiredDecimal(formData.get("rate"), "La tarifa");
+  await assertWeeklyPeriodOpen(weeklyPeriodId);
 
   await prisma.laborPayment.update({
     data: {
@@ -132,6 +135,7 @@ export async function deleteLaborPayment(formData: FormData) {
   const projectId = requiredString(formData.get("projectId"), "La obra");
   const weeklyPeriodId = requiredString(formData.get("weeklyPeriodId"), "La semana");
   const id = requiredString(formData.get("id"), "El pago de nomina");
+  await assertWeeklyPeriodOpen(weeklyPeriodId);
 
   await prisma.laborPayment.delete({
     where: { id },

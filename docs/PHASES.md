@@ -156,3 +156,4 @@ Implementado inicialmente:
 - autenticacion basica HTTP configurable por `.env`
 - proteccion apagada por defecto en desarrollo
 - `api/health` publico para healthchecks de Docker
+- bloqueo de captura cuando una semana esta cerrada

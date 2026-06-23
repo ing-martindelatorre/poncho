@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
+import { assertWeeklyPeriodOpen } from "@/lib/periods";
 
 function optionalString(value: FormDataEntryValue | null) {
   const text = String(value ?? "").trim();
@@ -49,6 +50,7 @@ export async function createMaterialDelivery(formData: FormData) {
   const projectId = requiredString(formData.get("projectId"), "La obra");
   const weeklyPeriodId = requiredString(formData.get("weeklyPeriodId"), "La semana");
   const materialPurchaseId = requiredString(formData.get("materialPurchaseId"), "El material");
+  await assertWeeklyPeriodOpen(weeklyPeriodId);
 
   await prisma.materialDelivery.create({
     data: {
@@ -71,6 +73,7 @@ export async function deleteMaterialDelivery(formData: FormData) {
   const weeklyPeriodId = requiredString(formData.get("weeklyPeriodId"), "La semana");
   const materialPurchaseId = requiredString(formData.get("materialPurchaseId"), "El material");
   const id = requiredString(formData.get("id"), "La entrega");
+  await assertWeeklyPeriodOpen(weeklyPeriodId);
 
   await prisma.materialDelivery.delete({
     where: { id },

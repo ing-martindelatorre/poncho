@@ -85,6 +85,7 @@ export default async function WeekPage({ params }: WeekPageProps) {
     OTHER: "Otro",
     TRANSFER: "Transferencia",
   };
+  const isClosed = period.status === PeriodStatus.CLOSED;
 
   return (
     <AppFrame active="weeks">
@@ -122,6 +123,12 @@ export default async function WeekPage({ params }: WeekPageProps) {
           <strong className="metric-text">{formatCurrency(paymentTotal)}</strong>
         </article>
       </section>
+
+      {isClosed ? (
+        <section className="locked-banner">
+          Semana cerrada. Los datos quedan en modo lectura hasta que se reabra.
+        </section>
+      ) : null}
 
       <section className="split-layout">
         <div className="panel">
@@ -213,13 +220,15 @@ export default async function WeekPage({ params }: WeekPageProps) {
           <span className="badge">{formatCurrency(workTotal)}</span>
         </div>
 
-        <div className="inline-create">
-          <div>
-            <p className="eyebrow">Nuevo destajo</p>
-            <h3>Agregar concepto</h3>
+        {!isClosed ? (
+          <div className="inline-create">
+            <div>
+              <p className="eyebrow">Nuevo destajo</p>
+              <h3>Agregar concepto</h3>
+            </div>
+            <WorkItemForm projectId={projectId} weeklyPeriodId={period.id} />
           </div>
-          <WorkItemForm projectId={projectId} weeklyPeriodId={period.id} />
-        </div>
+        ) : null}
 
         <div className="table-wrap">
           <table className="data-table">
@@ -251,20 +260,26 @@ export default async function WeekPage({ params }: WeekPageProps) {
                     <span className="badge">{moneyLabels[item.moneyKind]}</span>
                   </td>
                   <td className="row-actions">
-                    <a
-                      className="button ghost"
-                      href={`/projects/${projectId}/weeks/${period.id}/work-items/${item.id}`}
-                    >
-                      Editar
-                    </a>
-                    <form action={deleteWorkItem}>
-                      <input name="projectId" type="hidden" value={projectId} />
-                      <input name="weeklyPeriodId" type="hidden" value={period.id} />
-                      <input name="id" type="hidden" value={item.id} />
-                      <button className="button danger" type="submit">
-                        Eliminar
-                      </button>
-                    </form>
+                    {!isClosed ? (
+                      <>
+                        <a
+                          className="button ghost"
+                          href={`/projects/${projectId}/weeks/${period.id}/work-items/${item.id}`}
+                        >
+                          Editar
+                        </a>
+                        <form action={deleteWorkItem}>
+                          <input name="projectId" type="hidden" value={projectId} />
+                          <input name="weeklyPeriodId" type="hidden" value={period.id} />
+                          <input name="id" type="hidden" value={item.id} />
+                          <button className="button danger" type="submit">
+                            Eliminar
+                          </button>
+                        </form>
+                      </>
+                    ) : (
+                      <span className="badge">Lectura</span>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -290,13 +305,15 @@ export default async function WeekPage({ params }: WeekPageProps) {
           <span className="badge">{formatCurrency(materialTotal)}</span>
         </div>
 
-        <div className="inline-create">
-          <div>
-            <p className="eyebrow">Nuevo material</p>
-            <h3>Agregar compra o prepago</h3>
+        {!isClosed ? (
+          <div className="inline-create">
+            <div>
+              <p className="eyebrow">Nuevo material</p>
+              <h3>Agregar compra o prepago</h3>
+            </div>
+            <MaterialForm projectId={projectId} weeklyPeriodId={period.id} />
           </div>
-          <MaterialForm projectId={projectId} weeklyPeriodId={period.id} />
-        </div>
+        ) : null}
 
         <div className="table-wrap">
           <table className="data-table">
@@ -330,20 +347,31 @@ export default async function WeekPage({ params }: WeekPageProps) {
                     <span className="badge">{moneyLabels[purchase.moneyKind]}</span>
                   </td>
                   <td className="row-actions">
-                    <a
-                      className="button ghost"
-                      href={`/projects/${projectId}/weeks/${period.id}/materials/${purchase.id}`}
-                    >
-                      Editar
-                    </a>
-                    <form action={deleteMaterialPurchase}>
-                      <input name="projectId" type="hidden" value={projectId} />
-                      <input name="weeklyPeriodId" type="hidden" value={period.id} />
-                      <input name="id" type="hidden" value={purchase.id} />
-                      <button className="button danger" type="submit">
-                        Eliminar
-                      </button>
-                    </form>
+                    {!isClosed ? (
+                      <>
+                        <a
+                          className="button ghost"
+                          href={`/projects/${projectId}/weeks/${period.id}/materials/${purchase.id}`}
+                        >
+                          Editar
+                        </a>
+                        <form action={deleteMaterialPurchase}>
+                          <input name="projectId" type="hidden" value={projectId} />
+                          <input name="weeklyPeriodId" type="hidden" value={period.id} />
+                          <input name="id" type="hidden" value={purchase.id} />
+                          <button className="button danger" type="submit">
+                            Eliminar
+                          </button>
+                        </form>
+                      </>
+                    ) : (
+                      <a
+                        className="button ghost"
+                        href={`/projects/${projectId}/weeks/${period.id}/materials/${purchase.id}`}
+                      >
+                        Ver
+                      </a>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -369,13 +397,15 @@ export default async function WeekPage({ params }: WeekPageProps) {
           <span className="badge">{formatCurrency(laborTotal)}</span>
         </div>
 
-        <div className="inline-create">
-          <div>
-            <p className="eyebrow">Nuevo pago</p>
-            <h3>Agregar trabajador</h3>
+        {!isClosed ? (
+          <div className="inline-create">
+            <div>
+              <p className="eyebrow">Nuevo pago</p>
+              <h3>Agregar trabajador</h3>
+            </div>
+            <LaborForm projectId={projectId} weeklyPeriodId={period.id} />
           </div>
-          <LaborForm projectId={projectId} weeklyPeriodId={period.id} />
-        </div>
+        ) : null}
 
         <div className="table-wrap">
           <table className="data-table">
@@ -407,20 +437,26 @@ export default async function WeekPage({ params }: WeekPageProps) {
                     <span className="badge">{moneyLabels[payment.moneyKind]}</span>
                   </td>
                   <td className="row-actions">
-                    <a
-                      className="button ghost"
-                      href={`/projects/${projectId}/weeks/${period.id}/labor/${payment.id}`}
-                    >
-                      Editar
-                    </a>
-                    <form action={deleteLaborPayment}>
-                      <input name="projectId" type="hidden" value={projectId} />
-                      <input name="weeklyPeriodId" type="hidden" value={period.id} />
-                      <input name="id" type="hidden" value={payment.id} />
-                      <button className="button danger" type="submit">
-                        Eliminar
-                      </button>
-                    </form>
+                    {!isClosed ? (
+                      <>
+                        <a
+                          className="button ghost"
+                          href={`/projects/${projectId}/weeks/${period.id}/labor/${payment.id}`}
+                        >
+                          Editar
+                        </a>
+                        <form action={deleteLaborPayment}>
+                          <input name="projectId" type="hidden" value={projectId} />
+                          <input name="weeklyPeriodId" type="hidden" value={period.id} />
+                          <input name="id" type="hidden" value={payment.id} />
+                          <button className="button danger" type="submit">
+                            Eliminar
+                          </button>
+                        </form>
+                      </>
+                    ) : (
+                      <span className="badge">Lectura</span>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -446,13 +482,15 @@ export default async function WeekPage({ params }: WeekPageProps) {
           <span className="badge">{formatCurrency(paymentTotal)}</span>
         </div>
 
-        <div className="inline-create">
-          <div>
-            <p className="eyebrow">Nuevo abono</p>
-            <h3>Registrar pago</h3>
+        {!isClosed ? (
+          <div className="inline-create">
+            <div>
+              <p className="eyebrow">Nuevo abono</p>
+              <h3>Registrar pago</h3>
+            </div>
+            <PaymentForm projectId={projectId} weeklyPeriodId={period.id} />
           </div>
-          <PaymentForm projectId={projectId} weeklyPeriodId={period.id} />
-        </div>
+        ) : null}
 
         <div className="table-wrap">
           <table className="data-table">
@@ -480,20 +518,26 @@ export default async function WeekPage({ params }: WeekPageProps) {
                     <span className="badge">{moneyLabels[payment.moneyKind]}</span>
                   </td>
                   <td className="row-actions">
-                    <a
-                      className="button ghost"
-                      href={`/projects/${projectId}/weeks/${period.id}/payments/${payment.id}`}
-                    >
-                      Editar
-                    </a>
-                    <form action={deletePayment}>
-                      <input name="projectId" type="hidden" value={projectId} />
-                      <input name="weeklyPeriodId" type="hidden" value={period.id} />
-                      <input name="id" type="hidden" value={payment.id} />
-                      <button className="button danger" type="submit">
-                        Eliminar
-                      </button>
-                    </form>
+                    {!isClosed ? (
+                      <>
+                        <a
+                          className="button ghost"
+                          href={`/projects/${projectId}/weeks/${period.id}/payments/${payment.id}`}
+                        >
+                          Editar
+                        </a>
+                        <form action={deletePayment}>
+                          <input name="projectId" type="hidden" value={projectId} />
+                          <input name="weeklyPeriodId" type="hidden" value={period.id} />
+                          <input name="id" type="hidden" value={payment.id} />
+                          <button className="button danger" type="submit">
+                            Eliminar
+                          </button>
+                        </form>
+                      </>
+                    ) : (
+                      <span className="badge">Lectura</span>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -519,13 +563,15 @@ export default async function WeekPage({ params }: WeekPageProps) {
           <span className="badge">{period.photos.length} fotos</span>
         </div>
 
-        <div className="inline-create">
-          <div>
-            <p className="eyebrow">Nueva evidencia</p>
-            <h3>Subir foto</h3>
+        {!isClosed ? (
+          <div className="inline-create">
+            <div>
+              <p className="eyebrow">Nueva evidencia</p>
+              <h3>Subir foto</h3>
+            </div>
+            <PhotoForm projectId={projectId} weeklyPeriodId={period.id} />
           </div>
-          <PhotoForm projectId={projectId} weeklyPeriodId={period.id} />
-        </div>
+        ) : null}
 
         <div className="photo-grid">
           {period.photos.map((photo) => (
@@ -535,14 +581,16 @@ export default async function WeekPage({ params }: WeekPageProps) {
                 <strong>{photo.caption ?? "Sin comentario"}</strong>
                 <small>{photo.fileName}</small>
               </div>
-              <form action={deletePhoto}>
-                <input name="projectId" type="hidden" value={projectId} />
-                <input name="weeklyPeriodId" type="hidden" value={period.id} />
-                <input name="id" type="hidden" value={photo.id} />
-                <button className="button danger" type="submit">
-                  Eliminar
-                </button>
-              </form>
+              {!isClosed ? (
+                <form action={deletePhoto}>
+                  <input name="projectId" type="hidden" value={projectId} />
+                  <input name="weeklyPeriodId" type="hidden" value={period.id} />
+                  <input name="id" type="hidden" value={photo.id} />
+                  <button className="button danger" type="submit">
+                    Eliminar
+                  </button>
+                </form>
+              ) : null}
             </article>
           ))}
 

@@ -454,6 +454,16 @@ h3 {
   padding: 16px;
 }
 
+.locked-banner {
+  border: 1px solid #e1d1ab;
+  border-radius: 8px;
+  background: #fff8e7;
+  color: #765218;
+  font-weight: 800;
+  margin-bottom: 18px;
+  padding: 12px 14px;
+}
+
 .row-actions {
   align-items: center;
   display: flex;
