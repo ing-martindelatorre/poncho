@@ -1,8 +1,10 @@
 import { notFound } from "next/navigation";
 import { AppFrame } from "@/components/app-frame";
 import { prisma } from "@/lib/db";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatDate, formatNumber } from "@/lib/format";
 import { MaterialForm } from "../material-form";
+import { deleteMaterialDelivery } from "./deliveries/actions";
+import { DeliveryForm } from "./deliveries/delivery-form";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +15,9 @@ type MaterialPageProps = {
 async function getMaterial(weeklyPeriodId: string, id: string) {
   return prisma.materialPurchase.findFirst({
     include: {
+      deliveries: {
+        orderBy: { deliveryDate: "desc" },
+      },
       supplier: true,
       weeklyPeriod: {
         include: {
@@ -31,6 +36,14 @@ export default async function MaterialPage({ params }: MaterialPageProps) {
   if (!purchase) {
     notFound();
   }
+
+  const deliveredQuantity = purchase.deliveries.reduce(
+    (total, delivery) => total + Number(delivery.quantity ?? 0),
+    0,
+  );
+  const pendingQuantity =
+    purchase.quantity === null ? null : Number(purchase.quantity) - deliveredQuantity;
+  const balance = Number(purchase.total ?? 0) - Number(purchase.paidAmount ?? 0);
 
   return (
     <AppFrame active="materials">
@@ -77,8 +90,84 @@ export default async function MaterialPage({ params }: MaterialPageProps) {
               <dt>Notas</dt>
               <dd>{purchase.notes ?? "Sin notas"}</dd>
             </div>
+            <div>
+              <dt>Saldo pago</dt>
+              <dd>{formatCurrency(balance)}</dd>
+            </div>
+            <div>
+              <dt>Cantidad pendiente</dt>
+              <dd>
+                {pendingQuantity === null
+                  ? "Sin cantidad base"
+                  : `${formatNumber(pendingQuantity)} ${purchase.unit ?? ""}`}
+              </dd>
+            </div>
           </dl>
         </aside>
+      </section>
+
+      <section className="panel section-gap">
+        <div className="panel-header">
+          <div>
+            <p className="eyebrow">Entregas</p>
+            <h2>Material recibido</h2>
+          </div>
+          <span className="badge">
+            {formatNumber(deliveredQuantity)} {purchase.unit ?? ""}
+          </span>
+        </div>
+
+        <div className="inline-create">
+          <DeliveryForm
+            materialPurchaseId={purchase.id}
+            projectId={projectId}
+            weeklyPeriodId={periodId}
+          />
+        </div>
+
+        <div className="table-wrap">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Cantidad</th>
+                <th>Notas</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {purchase.deliveries.map((delivery) => (
+                <tr key={delivery.id}>
+                  <td>{formatDate(delivery.deliveryDate)}</td>
+                  <td>
+                    {delivery.quantity ? formatNumber(delivery.quantity) : "-"}{" "}
+                    {purchase.unit ?? ""}
+                  </td>
+                  <td>{delivery.notes ?? "-"}</td>
+                  <td>
+                    <form action={deleteMaterialDelivery}>
+                      <input name="projectId" type="hidden" value={projectId} />
+                      <input name="weeklyPeriodId" type="hidden" value={periodId} />
+                      <input name="materialPurchaseId" type="hidden" value={purchase.id} />
+                      <input name="id" type="hidden" value={delivery.id} />
+                      <button className="button danger" type="submit">
+                        Eliminar
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              ))}
+
+              {purchase.deliveries.length === 0 ? (
+                <tr>
+                  <td colSpan={4}>
+                    <div className="empty-state">Aun no hay entregas registradas.</div>
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
       </section>
     </AppFrame>
   );

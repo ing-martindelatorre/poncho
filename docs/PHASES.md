@@ -81,6 +81,17 @@ Objetivo:
 - marcar activos e inactivos
 - preparar seleccion estructurada en modulos operativos
 
+## Fase 5.2: Entregas de Material
+
+Estado: completada.
+
+Objetivo:
+
+- registrar entregas contra compras o prepagos
+- calcular cantidad recibida
+- visualizar cantidad pendiente
+- apoyar control de material pagado contra entregado
+
 ## Fase 6: Nomina y Pagos
 
 Estado: completada.
