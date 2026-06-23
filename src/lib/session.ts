@@ -75,7 +75,7 @@ export async function setSession(user: { id: string; role: UserRole }) {
     maxAge: maxAgeSeconds,
     path: "/",
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: process.env.DOMAIN_NAME !== undefined && process.env.DOMAIN_NAME !== "localhost",
   });
 }
 
