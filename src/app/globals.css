@@ -96,6 +96,10 @@ a {
   color: var(--green-strong);
 }
 
+.logout-link {
+  margin-top: 18px;
+}
+
 .content {
   padding: 28px;
 }
@@ -437,6 +441,44 @@ h3 {
   border-top: 1px solid var(--line);
   margin-top: 18px;
   padding-top: 18px;
+}
+
+.auth-shell {
+  align-items: center;
+  display: grid;
+  min-height: 100vh;
+  padding: 24px;
+  place-items: center;
+}
+
+.auth-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  max-width: 440px;
+  padding: 24px;
+  width: 100%;
+}
+
+.auth-brand {
+  margin-bottom: 20px;
+}
+
+.form-error {
+  border: 1px solid #e6caca;
+  border-radius: 8px;
+  background: #fff3f3;
+  color: var(--red);
+  font-weight: 800;
+  padding: 10px 12px;
+}
+
+.muted-link {
+  color: var(--muted);
+  display: inline-flex;
+  font-weight: 800;
+  margin-top: 16px;
 }
 
 .stacked-actions {

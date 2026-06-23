@@ -154,6 +154,10 @@ Objetivo:
 Implementado inicialmente:
 
 - autenticacion basica HTTP configurable por `.env`
+- login interno con usuarios en base de datos
+- roles admin, arquitecto, capturista y solo lectura
+- pantalla de configuracion del primer administrador
+- administracion de usuarios para admin
 - proteccion apagada por defecto en desarrollo
 - `api/health` publico para healthchecks de Docker
 - bloqueo de captura cuando una semana esta cerrada

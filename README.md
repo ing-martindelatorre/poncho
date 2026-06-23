@@ -50,9 +50,12 @@ BACKUP_RETENTION_DAYS=14
 HONORARIOS_RATE=0.10
 BASIC_AUTH_USER=
 BASIC_AUTH_PASSWORD=
+AUTH_SECRET=change_me_to_a_long_random_string
 ```
 
 Si `BASIC_AUTH_USER` y `BASIC_AUTH_PASSWORD` tienen valor, la app queda protegida con autenticacion basica HTTP. Si estan vacias, la proteccion queda apagada para desarrollo local.
+
+Si `AUTH_SECRET` tiene valor, la app requiere login con usuarios internos. Al primer arranque visita `/setup` para crear el administrador inicial.
 
 ## Deploy inicial en Linux
 

@@ -8,7 +8,8 @@ type AppFrameProps = {
     | "weeks"
     | "work-items"
     | "materials"
-    | "photos";
+    | "photos"
+    | "users";
   children: ReactNode;
 };
 
@@ -20,6 +21,7 @@ const navItems = [
   { key: "materials", href: "/projects", label: "Materiales" },
   { key: "photos", href: "/projects", label: "Fotos" },
   { key: "catalogs", href: "/catalogs", label: "Catalogos" },
+  { key: "users", href: "/users", label: "Usuarios" },
 ] as const;
 
 export function AppFrame({ active, children }: AppFrameProps) {
@@ -45,6 +47,10 @@ export function AppFrame({ active, children }: AppFrameProps) {
             </a>
           ))}
         </nav>
+
+        <a className="nav-item logout-link" href="/logout">
+          Salir
+        </a>
       </aside>
 
       <section className="content">{children}</section>

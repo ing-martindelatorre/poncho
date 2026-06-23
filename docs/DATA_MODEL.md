@@ -4,6 +4,17 @@ El modelo inicial esta definido en `prisma/schema.prisma`.
 
 ## Entidades Principales
 
+### User
+
+Representa un usuario interno del sistema.
+
+Roles:
+
+- `ADMIN`
+- `ARCHITECT`
+- `CAPTURE`
+- `READ_ONLY`
+
 ### Project
 
 Representa una obra.
@@ -81,4 +92,3 @@ Puede ligarse a:
 - material
 - nomina
 - pago
-

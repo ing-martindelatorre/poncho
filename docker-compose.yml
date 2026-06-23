@@ -30,6 +30,9 @@ services:
       NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME:-Poncho}
       UPLOAD_DIR: /app/uploads
       HONORARIOS_RATE: ${HONORARIOS_RATE:-0.10}
+      AUTH_SECRET: ${AUTH_SECRET:-}
+      BASIC_AUTH_USER: ${BASIC_AUTH_USER:-}
+      BASIC_AUTH_PASSWORD: ${BASIC_AUTH_PASSWORD:-}
     ports:
       - "${WEB_PORT:-3000}:3000"
     volumes:

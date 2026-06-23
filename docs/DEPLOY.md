@@ -21,7 +21,16 @@ Para proteger el deploy de pruebas:
 ```txt
 BASIC_AUTH_USER=admin
 BASIC_AUTH_PASSWORD=una_contrasena_segura
+AUTH_SECRET=otra_cadena_larga_y_aleatoria
 ```
+
+Despues del primer arranque con `AUTH_SECRET`, abrir:
+
+```txt
+http://SERVER_IP:3000/setup
+```
+
+Ese flujo crea el primer usuario administrador. A partir de ahi se entra por `/login`.
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
