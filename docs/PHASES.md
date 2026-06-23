@@ -139,6 +139,7 @@ Objetivo:
 - totales por semana
 - costo por m2
 - exportacion PDF
+- exportacion CSV compatible con Excel
 
 ## Fase 9: Seguridad
 

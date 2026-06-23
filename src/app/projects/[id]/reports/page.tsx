@@ -3,6 +3,7 @@ import { AppFrame } from "@/components/app-frame";
 import { PrintButton } from "@/components/print-button";
 import { prisma } from "@/lib/db";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/format";
+import { sumMoney } from "@/lib/reporting";
 
 export const dynamic = "force-dynamic";
 
@@ -25,16 +26,6 @@ async function getProject(id: string) {
     },
     where: { id },
   });
-}
-
-function sumMoney<T extends { moneyKind: string } & Record<string, unknown>>(
-  rows: T[],
-  moneyKind: "CASH" | "INVOICED",
-  field: keyof T = "total",
-) {
-  return rows
-    .filter((row) => row.moneyKind === moneyKind)
-    .reduce((total, row) => total + Number(row[field] ?? 0), 0);
 }
 
 export default async function ReportsPage({ params }: ReportsPageProps) {
@@ -100,6 +91,9 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
         <div className="row-actions">
           <a className="button ghost no-print" href={`/projects/${project.id}`}>
             Volver a obra
+          </a>
+          <a className="button ghost no-print" href={`/projects/${project.id}/reports/export`}>
+            Exportar CSV
           </a>
           <PrintButton />
         </div>
