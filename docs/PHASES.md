@@ -106,9 +106,17 @@ Objetivo:
 
 ## Fase 9: Seguridad
 
+Estado: base completada.
+
 Objetivo:
 
 - login
 - roles
 - auditoria basica
 - bloqueo de semanas cerradas
+
+Implementado inicialmente:
+
+- autenticacion basica HTTP configurable por `.env`
+- proteccion apagada por defecto en desarrollo
+- `api/health` publico para healthchecks de Docker

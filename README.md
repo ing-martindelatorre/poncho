@@ -48,7 +48,11 @@ DATABASE_URL=postgresql://poncho:change_me_in_production@db:5432/poncho?schema=p
 WEB_PORT=3000
 BACKUP_RETENTION_DAYS=14
 HONORARIOS_RATE=0.10
+BASIC_AUTH_USER=
+BASIC_AUTH_PASSWORD=
 ```
+
+Si `BASIC_AUTH_USER` y `BASIC_AUTH_PASSWORD` tienen valor, la app queda protegida con autenticacion basica HTTP. Si estan vacias, la proteccion queda apagada para desarrollo local.
 
 ## Deploy inicial en Linux
 

@@ -16,6 +16,13 @@ cp .env.example .env
 
 Editar `.env` y cambiar contrasenas.
 
+Para proteger el deploy de pruebas:
+
+```txt
+BASIC_AUTH_USER=admin
+BASIC_AUTH_PASSWORD=una_contrasena_segura
+```
+
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 ```
@@ -60,4 +67,3 @@ Crear respaldo manual:
 ```bash
 docker compose exec backup sh /app/scripts/backup-postgres.sh
 ```
-
