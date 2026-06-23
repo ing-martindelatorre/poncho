@@ -43,6 +43,22 @@ git pull
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 ```
 
+## HTTPS con dominio
+
+Configurar en `.env`:
+
+```txt
+DOMAIN_NAME=tu-dominio.com
+```
+
+Levantar incluyendo el perfil proxy:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile proxy up -d --build
+```
+
+Caddy genera certificados automaticamente cuando el dominio apunta al servidor y los puertos 80/443 estan abiertos.
+
 ## Ver Logs
 
 ```bash
@@ -64,6 +80,7 @@ http://SERVER_IP:3000/api/health
 ## Respaldos
 
 El servicio `backup` genera respaldos SQL diarios en el volumen `poncho_backups`.
+Tambien genera un respaldo comprimido de `uploads` con fotos/evidencias.
 
 Listar respaldos:
 

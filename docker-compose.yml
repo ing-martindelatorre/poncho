@@ -56,8 +56,10 @@ services:
       PGUSER: ${POSTGRES_USER:-poncho}
       PGPASSWORD: ${POSTGRES_PASSWORD:-poncho_dev_password}
       BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-14}
+      UPLOADS_DIR: /uploads
     volumes:
       - poncho_backups:/backups
+      - poncho_uploads:/uploads:ro
       - ./scripts:/app/scripts:ro
     command: >
       sh -c "while true; do
@@ -65,7 +67,28 @@ services:
         sleep 86400;
       done"
 
+  proxy:
+    image: caddy:2-alpine
+    container_name: poncho-proxy
+    restart: unless-stopped
+    profiles:
+      - proxy
+    depends_on:
+      web:
+        condition: service_started
+    environment:
+      DOMAIN_NAME: ${DOMAIN_NAME:-localhost}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - poncho_caddy_data:/data
+      - poncho_caddy_config:/config
+
 volumes:
   poncho_pgdata:
   poncho_uploads:
   poncho_backups:
+  poncho_caddy_data:
+  poncho_caddy_config:

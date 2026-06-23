@@ -173,3 +173,14 @@ Implementado inicialmente:
 - proteccion apagada por defecto en desarrollo
 - `api/health` publico para healthchecks de Docker
 - bloqueo de captura cuando una semana esta cerrada
+
+## Fase 10: Deploy Produccion
+
+Estado: completada base.
+
+Incluye:
+
+- backup SQL de PostgreSQL
+- backup comprimido de uploads/fotos
+- Caddy opcional para HTTPS con dominio
+- perfil Docker Compose `proxy`

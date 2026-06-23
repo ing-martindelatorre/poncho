@@ -51,6 +51,7 @@ HONORARIOS_RATE=0.10
 BASIC_AUTH_USER=
 BASIC_AUTH_PASSWORD=
 AUTH_SECRET=change_me_to_a_long_random_string
+DOMAIN_NAME=localhost
 ```
 
 Si `BASIC_AUTH_USER` y `BASIC_AUTH_PASSWORD` tienen valor, la app queda protegida con autenticacion basica HTTP. Si estan vacias, la proteccion queda apagada para desarrollo local.
