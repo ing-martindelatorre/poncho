@@ -5,8 +5,12 @@ import { prisma } from "@/lib/db";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/format";
 import { deleteWeeklyPeriod, toggleWeeklyPeriodStatus } from "../actions";
 import { WeekForm } from "../week-form";
+import { deleteLaborPayment } from "./labor/actions";
+import { LaborForm } from "./labor/labor-form";
 import { deleteMaterialPurchase } from "./materials/actions";
 import { MaterialForm } from "./materials/material-form";
+import { deletePayment } from "./payments/actions";
+import { PaymentForm } from "./payments/payment-form";
 import { deleteWorkItem } from "./work-items/actions";
 import { WorkItemForm } from "./work-items/work-item-form";
 
@@ -19,14 +23,18 @@ type WeekPageProps = {
 async function getPeriod(projectId: string, id: string) {
   return prisma.weeklyPeriod.findFirst({
     include: {
-      laborPayments: true,
+      laborPayments: {
+        orderBy: { createdAt: "desc" },
+      },
       materialPurchases: {
         include: {
           supplier: true,
         },
         orderBy: { createdAt: "desc" },
       },
-      payments: true,
+      payments: {
+        orderBy: { paidAt: "desc" },
+      },
       photos: true,
       project: true,
       workItems: {
@@ -65,6 +73,13 @@ export default async function WeekPage({ params }: WeekPageProps) {
     DELIVERED: "Entregado",
     ORDERED: "Ordenado",
     PARTIAL: "Parcial",
+  };
+  const paymentMethodLabels = {
+    CARD: "Tarjeta",
+    CASH: "Efectivo",
+    CHECK: "Cheque",
+    OTHER: "Otro",
+    TRANSFER: "Transferencia",
   };
 
   return (
@@ -333,6 +348,156 @@ export default async function WeekPage({ params }: WeekPageProps) {
                 <tr>
                   <td colSpan={8}>
                     <div className="empty-state">Aun no hay materiales en esta semana.</div>
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="panel section-gap">
+        <div className="panel-header">
+          <div>
+            <p className="eyebrow">Nomina</p>
+            <h2>Mano de obra</h2>
+          </div>
+          <span className="badge">{formatCurrency(laborTotal)}</span>
+        </div>
+
+        <div className="inline-create">
+          <div>
+            <p className="eyebrow">Nuevo pago</p>
+            <h3>Agregar trabajador</h3>
+          </div>
+          <LaborForm projectId={projectId} weeklyPeriodId={period.id} />
+        </div>
+
+        <div className="table-wrap">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Trabajador</th>
+                <th>Rol</th>
+                <th>Dias</th>
+                <th>Horas</th>
+                <th>Tarifa</th>
+                <th>Total</th>
+                <th>Tipo</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {period.laborPayments.map((payment) => (
+                <tr key={payment.id}>
+                  <td>
+                    <strong>{payment.workerName}</strong>
+                    <small>{payment.notes ?? "Sin notas"}</small>
+                  </td>
+                  <td>{payment.role ?? "-"}</td>
+                  <td>{payment.days ? formatNumber(payment.days) : "-"}</td>
+                  <td>{payment.hours ? formatNumber(payment.hours) : "-"}</td>
+                  <td>{formatCurrency(payment.rate)}</td>
+                  <td>{formatCurrency(payment.total)}</td>
+                  <td>
+                    <span className="badge">{moneyLabels[payment.moneyKind]}</span>
+                  </td>
+                  <td className="row-actions">
+                    <a
+                      className="button ghost"
+                      href={`/projects/${projectId}/weeks/${period.id}/labor/${payment.id}`}
+                    >
+                      Editar
+                    </a>
+                    <form action={deleteLaborPayment}>
+                      <input name="projectId" type="hidden" value={projectId} />
+                      <input name="weeklyPeriodId" type="hidden" value={period.id} />
+                      <input name="id" type="hidden" value={payment.id} />
+                      <button className="button danger" type="submit">
+                        Eliminar
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              ))}
+
+              {period.laborPayments.length === 0 ? (
+                <tr>
+                  <td colSpan={8}>
+                    <div className="empty-state">Aun no hay nomina en esta semana.</div>
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="panel section-gap">
+        <div className="panel-header">
+          <div>
+            <p className="eyebrow">Pagos</p>
+            <h2>Abonos registrados</h2>
+          </div>
+          <span className="badge">{formatCurrency(paymentTotal)}</span>
+        </div>
+
+        <div className="inline-create">
+          <div>
+            <p className="eyebrow">Nuevo abono</p>
+            <h3>Registrar pago</h3>
+          </div>
+          <PaymentForm projectId={projectId} weeklyPeriodId={period.id} />
+        </div>
+
+        <div className="table-wrap">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Descripcion</th>
+                <th>Fecha</th>
+                <th>Metodo</th>
+                <th>Monto</th>
+                <th>Tipo</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {period.payments.map((payment) => (
+                <tr key={payment.id}>
+                  <td>
+                    <strong>{payment.description}</strong>
+                    <small>{payment.notes ?? "Sin notas"}</small>
+                  </td>
+                  <td>{formatDate(payment.paidAt)}</td>
+                  <td>{paymentMethodLabels[payment.method]}</td>
+                  <td>{formatCurrency(payment.amount)}</td>
+                  <td>
+                    <span className="badge">{moneyLabels[payment.moneyKind]}</span>
+                  </td>
+                  <td className="row-actions">
+                    <a
+                      className="button ghost"
+                      href={`/projects/${projectId}/weeks/${period.id}/payments/${payment.id}`}
+                    >
+                      Editar
+                    </a>
+                    <form action={deletePayment}>
+                      <input name="projectId" type="hidden" value={projectId} />
+                      <input name="weeklyPeriodId" type="hidden" value={period.id} />
+                      <input name="id" type="hidden" value={payment.id} />
+                      <button className="button danger" type="submit">
+                        Eliminar
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              ))}
+
+              {period.payments.length === 0 ? (
+                <tr>
+                  <td colSpan={6}>
+                    <div className="empty-state">Aun no hay pagos en esta semana.</div>
                   </td>
                 </tr>
               ) : null}

@@ -72,6 +72,8 @@ Objetivo:
 
 ## Fase 6: Nomina y Pagos
 
+Estado: completada.
+
 Objetivo:
 
 - registrar pagos de mano de obra
