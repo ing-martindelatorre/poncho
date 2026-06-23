@@ -5,67 +5,63 @@ export const dynamic = "force-dynamic";
 
 type DashboardStats = {
   databaseOnline: boolean;
+  debt: number;
+  laborTotal: number;
+  materialTotal: number;
+  openPeriods: number;
+  paymentsTotal: number;
   projects: number;
   periods: number;
+  total: number;
+  workTotal: number;
   workItems: number;
   materialPurchases: number;
   photos: number;
 };
 
-const modules = [
-  {
-    name: "Obras",
-    phase: "Fase 2",
-    status: "Modelo listo",
-    detail: "Datos base de obra, direccion, cliente, m2 y estado.",
-  },
-  {
-    name: "Semanas",
-    phase: "Fase 3",
-    status: "Modelo listo",
-    detail: "Cortes semanales abiertos o cerrados por obra.",
-  },
-  {
-    name: "Destajos",
-    phase: "Fase 3",
-    status: "Modelo listo",
-    detail: "Conceptos con unidad, volumen, precio unitario y total.",
-  },
-  {
-    name: "Materiales",
-    phase: "Fase 3",
-    status: "Modelo listo",
-    detail: "Efectivo, facturado, prepagos, entregas y proveedores.",
-  },
-  {
-    name: "Fotos",
-    phase: "Fase 4",
-    status: "Preparado",
-    detail: "Evidencia ligada a obra, semana, pago, material o destajo.",
-  },
-  {
-    name: "Reportes",
-    phase: "Fase 5",
-    status: "Pendiente",
-    detail: "Caratulas, acumulados, deuda, honorarios y costo por m2.",
-  },
-];
-
 async function getStats(): Promise<DashboardStats> {
   try {
-    const [projects, periods, workItems, materialPurchases, photos] =
+    const [
+      projects,
+      periods,
+      openPeriods,
+      workItems,
+      materialPurchases,
+      photos,
+      workAggregate,
+      laborAggregate,
+      materialAggregate,
+      paymentAggregate,
+    ] =
       await prisma.$transaction([
         prisma.project.count(),
         prisma.weeklyPeriod.count(),
+        prisma.weeklyPeriod.count({ where: { status: "OPEN" } }),
         prisma.workItem.count(),
         prisma.materialPurchase.count(),
         prisma.photo.count(),
+        prisma.workItem.aggregate({ _sum: { total: true } }),
+        prisma.laborPayment.aggregate({ _sum: { total: true } }),
+        prisma.materialPurchase.aggregate({ _sum: { total: true } }),
+        prisma.payment.aggregate({ _sum: { amount: true } }),
       ]);
+    const workTotal = Number(workAggregate._sum.total ?? 0);
+    const laborTotal = Number(laborAggregate._sum.total ?? 0);
+    const materialTotal = Number(materialAggregate._sum.total ?? 0);
+    const paymentsTotal = Number(paymentAggregate._sum.amount ?? 0);
+    const total = workTotal + laborTotal + materialTotal;
 
     return {
       databaseOnline: true,
+      debt: total - paymentsTotal,
+      laborTotal,
+      materialTotal,
+      openPeriods,
+      paymentsTotal,
       projects,
       periods,
+      total,
+      workTotal,
       workItems,
       materialPurchases,
       photos,
@@ -73,8 +69,15 @@ async function getStats(): Promise<DashboardStats> {
   } catch {
     return {
       databaseOnline: false,
+      debt: 0,
+      laborTotal: 0,
+      materialTotal: 0,
+      openPeriods: 0,
+      paymentsTotal: 0,
       projects: 0,
       periods: 0,
+      total: 0,
+      workTotal: 0,
       workItems: 0,
       materialPurchases: 0,
       photos: 0,
@@ -84,20 +87,38 @@ async function getStats(): Promise<DashboardStats> {
 
 export default async function Home() {
   const stats = await getStats();
+  const recentProjects = stats.databaseOnline
+    ? await prisma.project.findMany({
+        include: {
+          periods: {
+            orderBy: { startDate: "desc" },
+            take: 1,
+          },
+          _count: {
+            select: {
+              periods: true,
+              photos: true,
+            },
+          },
+        },
+        orderBy: { updatedAt: "desc" },
+        take: 6,
+      })
+    : [];
   const metricCards = [
     { label: "Obras", value: stats.projects },
-    { label: "Semanas", value: stats.periods },
-    { label: "Destajos", value: stats.workItems },
-    { label: "Materiales", value: stats.materialPurchases },
-    { label: "Fotos", value: stats.photos },
+    { label: "Semanas abiertas", value: stats.openPeriods },
+    { label: "Total capturado", value: stats.total, money: true },
+    { label: "Pagos", value: stats.paymentsTotal, money: true },
+    { label: "Deuda estimada", value: stats.debt, money: true },
   ];
 
   return (
     <AppFrame active="dashboard">
         <header className="topbar">
           <div>
-            <p className="eyebrow">Fase 1</p>
-            <h1>Base desplegable</h1>
+            <p className="eyebrow">Operacion</p>
+            <h1>Dashboard</h1>
           </div>
           <div
             className={stats.databaseOnline ? "status online" : "status offline"}
@@ -112,7 +133,15 @@ export default async function Home() {
           {metricCards.map((metric) => (
             <article className="metric-card" key={metric.label}>
               <small>{metric.label}</small>
-              <strong>{metric.value}</strong>
+              <strong className={metric.money ? "metric-text" : undefined}>
+                {metric.money
+                  ? new Intl.NumberFormat("es-MX", {
+                      currency: "MXN",
+                      maximumFractionDigits: 2,
+                      style: "currency",
+                    }).format(metric.value)
+                  : metric.value}
+              </strong>
             </article>
           ))}
         </section>
@@ -121,33 +150,67 @@ export default async function Home() {
           <div className="panel main-panel">
             <div className="panel-header">
               <div>
-                <p className="eyebrow">Plan de construccion</p>
-                <h2>Modulos del MVP</h2>
+                <p className="eyebrow">Obras recientes</p>
+                <h2>Accesos rapidos</h2>
               </div>
+              <a className="button primary" href="/projects">
+                Nueva obra
+              </a>
             </div>
 
-            <div className="module-grid">
-              {modules.map((module) => (
-                <article className="module-card" key={module.name}>
-                  <div className="module-card-header">
-                    <span>{module.phase}</span>
-                    <strong>{module.status}</strong>
-                  </div>
-                  <h3>{module.name}</h3>
-                  <p>{module.detail}</p>
-                </article>
-              ))}
+            <div className="table-wrap">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Obra</th>
+                    <th>Estado</th>
+                    <th>Semanas</th>
+                    <th>Ultimo corte</th>
+                    <th>Fotos</th>
+                    <th />
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentProjects.map((project) => (
+                    <tr key={project.id}>
+                      <td>
+                        <strong>{project.name}</strong>
+                        <small>{project.address ?? "Sin direccion"}</small>
+                      </td>
+                      <td>
+                        <span className="badge">{project.status}</span>
+                      </td>
+                      <td>{project._count.periods}</td>
+                      <td>{project.periods[0]?.label ?? "Sin cortes"}</td>
+                      <td>{project._count.photos}</td>
+                      <td>
+                        <a className="button ghost" href={`/projects/${project.id}`}>
+                          Abrir
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+
+                  {recentProjects.length === 0 ? (
+                    <tr>
+                      <td colSpan={6}>
+                        <div className="empty-state">Aun no hay obras registradas.</div>
+                      </td>
+                    </tr>
+                  ) : null}
+                </tbody>
+              </table>
             </div>
           </div>
 
           <aside className="panel side-panel">
-            <p className="eyebrow">Siguiente entrega</p>
-            <h2>Captura inicial</h2>
+            <p className="eyebrow">Distribucion</p>
+            <h2>Captura actual</h2>
             <ul className="next-list">
-              <li>CRUD de obras.</li>
-              <li>CRUD de semanas por obra.</li>
-              <li>Formulario de destajos.</li>
-              <li>Resumen semanal calculado.</li>
+              <li>Destajos: {stats.workItems} registros.</li>
+              <li>Materiales: {stats.materialPurchases} registros.</li>
+              <li>Fotos: {stats.photos} evidencias.</li>
+              <li>Semanas totales: {stats.periods} cortes.</li>
             </ul>
           </aside>
         </section>

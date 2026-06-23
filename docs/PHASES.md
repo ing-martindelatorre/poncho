@@ -16,6 +16,20 @@ Incluye:
 - volumen de backups
 - README de deploy
 
+## Fase 1.1: Dashboard Operativo
+
+Estado: completada.
+
+Incluye:
+
+- resumen de obras
+- semanas abiertas
+- total capturado
+- pagos
+- deuda estimada
+- obras recientes
+- accesos rapidos
+
 ## Fase 2: Obras
 
 Estado: completada.
