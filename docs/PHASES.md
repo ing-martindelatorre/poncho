@@ -184,3 +184,13 @@ Incluye:
 - backup comprimido de uploads/fotos
 - Caddy opcional para HTTPS con dominio
 - perfil Docker Compose `proxy`
+
+## Fase 11: CI y Pruebas
+
+Estado: completada base.
+
+Incluye:
+
+- GitHub Actions para install, Prisma generate, tests, typecheck y build
+- pruebas minimas de CSV
+- pruebas minimas de calculos/exportacion
