@@ -83,6 +83,8 @@ Objetivo:
 
 ## Fase 7: Fotos
 
+Estado: completada.
+
 Objetivo:
 
 - subir evidencia

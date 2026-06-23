@@ -11,6 +11,8 @@ import { deleteMaterialPurchase } from "./materials/actions";
 import { MaterialForm } from "./materials/material-form";
 import { deletePayment } from "./payments/actions";
 import { PaymentForm } from "./payments/payment-form";
+import { deletePhoto } from "./photos/actions";
+import { PhotoForm } from "./photos/photo-form";
 import { deleteWorkItem } from "./work-items/actions";
 import { WorkItemForm } from "./work-items/work-item-form";
 
@@ -35,7 +37,9 @@ async function getPeriod(projectId: string, id: string) {
       payments: {
         orderBy: { paidAt: "desc" },
       },
-      photos: true,
+      photos: {
+        orderBy: { createdAt: "desc" },
+      },
       project: true,
       workItems: {
         orderBy: { createdAt: "desc" },
@@ -503,6 +507,48 @@ export default async function WeekPage({ params }: WeekPageProps) {
               ) : null}
             </tbody>
           </table>
+        </div>
+      </section>
+
+      <section className="panel section-gap">
+        <div className="panel-header">
+          <div>
+            <p className="eyebrow">Fotos</p>
+            <h2>Evidencia de la semana</h2>
+          </div>
+          <span className="badge">{period.photos.length} fotos</span>
+        </div>
+
+        <div className="inline-create">
+          <div>
+            <p className="eyebrow">Nueva evidencia</p>
+            <h3>Subir foto</h3>
+          </div>
+          <PhotoForm projectId={projectId} weeklyPeriodId={period.id} />
+        </div>
+
+        <div className="photo-grid">
+          {period.photos.map((photo) => (
+            <article className="photo-card" key={photo.id}>
+              <img alt={photo.caption ?? photo.fileName} src={`/api/photos/${photo.id}`} />
+              <div>
+                <strong>{photo.caption ?? "Sin comentario"}</strong>
+                <small>{photo.fileName}</small>
+              </div>
+              <form action={deletePhoto}>
+                <input name="projectId" type="hidden" value={projectId} />
+                <input name="weeklyPeriodId" type="hidden" value={period.id} />
+                <input name="id" type="hidden" value={photo.id} />
+                <button className="button danger" type="submit">
+                  Eliminar
+                </button>
+              </form>
+            </article>
+          ))}
+
+          {period.photos.length === 0 ? (
+            <div className="empty-state">Aun no hay fotos en esta semana.</div>
+          ) : null}
         </div>
       </section>
     </AppFrame>
