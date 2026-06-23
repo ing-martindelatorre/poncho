@@ -18,7 +18,7 @@ Incluye:
 
 ## Fase 2: Obras
 
-Estado: en desarrollo.
+Estado: completada.
 
 Objetivo:
 
@@ -100,4 +100,3 @@ Objetivo:
 - roles
 - auditoria basica
 - bloqueo de semanas cerradas
-

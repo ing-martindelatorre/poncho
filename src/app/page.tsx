@@ -1,3 +1,4 @@
+import { AppFrame } from "@/components/app-frame";
 import { prisma } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -92,39 +93,7 @@ export default async function Home() {
   ];
 
   return (
-    <main className="app-shell">
-      <aside className="sidebar" aria-label="Navegacion principal">
-        <div className="brand">
-          <span className="brand-mark">P</span>
-          <div>
-            <strong>Poncho</strong>
-            <small>Control de obra</small>
-          </div>
-        </div>
-
-        <nav className="nav-list">
-          <a className="nav-item active" href="/">
-            Dashboard
-          </a>
-          <a className="nav-item" href="/">
-            Obras
-          </a>
-          <a className="nav-item" href="/">
-            Semanas
-          </a>
-          <a className="nav-item" href="/">
-            Destajos
-          </a>
-          <a className="nav-item" href="/">
-            Materiales
-          </a>
-          <a className="nav-item" href="/">
-            Fotos
-          </a>
-        </nav>
-      </aside>
-
-      <section className="content">
+    <AppFrame active="dashboard">
         <header className="topbar">
           <div>
             <p className="eyebrow">Fase 1</p>
@@ -182,7 +151,6 @@ export default async function Home() {
             </ul>
           </aside>
         </section>
-      </section>
-    </main>
+    </AppFrame>
   );
 }
