@@ -5,36 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireWriteAccess } from "@/lib/authz";
 import { prisma } from "@/lib/db";
-
-function optionalString(value: FormDataEntryValue | null) {
-  const text = String(value ?? "").trim();
-  return text.length > 0 ? text : null;
-}
-
-function requiredString(value: FormDataEntryValue | null, fieldName: string) {
-  const text = optionalString(value);
-
-  if (!text) {
-    throw new Error(`${fieldName} es obligatorio.`);
-  }
-
-  return text;
-}
-
-function requiredInteger(value: FormDataEntryValue | null, fieldName: string) {
-  const number = Number(String(value ?? "").trim());
-
-  if (!Number.isInteger(number) || number <= 0) {
-    throw new Error(`${fieldName} no es valido.`);
-  }
-
-  return number;
-}
-
-function requiredDate(value: FormDataEntryValue | null, fieldName: string) {
-  const text = requiredString(value, fieldName);
-  return new Date(`${text}T00:00:00.000Z`);
-}
+import { optionalString, requiredDate, requiredInteger, requiredString } from "@/lib/form-helpers";
 
 function periodStatus(value: FormDataEntryValue | null) {
   const text = String(value ?? PeriodStatus.OPEN);

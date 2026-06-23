@@ -1,39 +1,13 @@
 "use server";
 
-import { MoneyKind, PaymentMethod } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireWriteAccess } from "@/lib/authz";
 import { prisma } from "@/lib/db";
+import { moneyKind, optionalString, paymentMethod, requiredDecimal, requiredString } from "@/lib/form-helpers";
 import { assertWeeklyPeriodOpen } from "@/lib/periods";
 
-function optionalString(value: FormDataEntryValue | null) {
-  const text = String(value ?? "").trim();
-  return text.length > 0 ? text : null;
-}
-
-function requiredString(value: FormDataEntryValue | null, fieldName: string) {
-  const text = optionalString(value);
-
-  if (!text) {
-    throw new Error(`${fieldName} es obligatorio.`);
-  }
-
-  return text;
-}
-
-function requiredDecimal(value: FormDataEntryValue | null, fieldName: string) {
-  const text = String(value ?? "").trim().replace(",", ".");
-  const number = Number(text);
-
-  if (!text || !Number.isFinite(number) || number < 0) {
-    throw new Error(`${fieldName} no es valido.`);
-  }
-
-  return text;
-}
-
-function optionalDate(value: FormDataEntryValue | null) {
+function optionalDateOrNow(value: FormDataEntryValue | null) {
   const text = String(value ?? "").trim();
 
   if (!text) {
@@ -41,26 +15,6 @@ function optionalDate(value: FormDataEntryValue | null) {
   }
 
   return new Date(`${text}T00:00:00.000Z`);
-}
-
-function moneyKind(value: FormDataEntryValue | null) {
-  const text = String(value ?? MoneyKind.CASH);
-
-  if (!Object.values(MoneyKind).includes(text as MoneyKind)) {
-    return MoneyKind.CASH;
-  }
-
-  return text as MoneyKind;
-}
-
-function paymentMethod(value: FormDataEntryValue | null) {
-  const text = String(value ?? PaymentMethod.TRANSFER);
-
-  if (!Object.values(PaymentMethod).includes(text as PaymentMethod)) {
-    return PaymentMethod.TRANSFER;
-  }
-
-  return text as PaymentMethod;
 }
 
 function weekPath(projectId: string, periodId: string) {
@@ -80,7 +34,7 @@ export async function createPayment(formData: FormData) {
       method: paymentMethod(formData.get("method")),
       moneyKind: moneyKind(formData.get("moneyKind")),
       notes: optionalString(formData.get("notes")),
-      paidAt: optionalDate(formData.get("paidAt")),
+      paidAt: optionalDateOrNow(formData.get("paidAt")),
       targetId: weeklyPeriodId,
       targetType: "weekly_period",
       weeklyPeriodId,
@@ -108,7 +62,7 @@ export async function updatePayment(formData: FormData) {
       method: paymentMethod(formData.get("method")),
       moneyKind: moneyKind(formData.get("moneyKind")),
       notes: optionalString(formData.get("notes")),
-      paidAt: optionalDate(formData.get("paidAt")),
+      paidAt: optionalDateOrNow(formData.get("paidAt")),
     },
     where: { id },
   });

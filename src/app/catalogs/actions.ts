@@ -4,25 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireManagerAccess } from "@/lib/authz";
 import { prisma } from "@/lib/db";
-
-function optionalString(value: FormDataEntryValue | null) {
-  const text = String(value ?? "").trim();
-  return text.length > 0 ? text : null;
-}
-
-function requiredString(value: FormDataEntryValue | null, fieldName: string) {
-  const text = optionalString(value);
-
-  if (!text) {
-    throw new Error(`${fieldName} es obligatorio.`);
-  }
-
-  return text;
-}
-
-function booleanFrom(value: FormDataEntryValue | null) {
-  return String(value ?? "true") === "true";
-}
+import { booleanFrom, optionalString, requiredString } from "@/lib/form-helpers";
 
 export async function createSupplier(formData: FormData) {
   await requireManagerAccess();
