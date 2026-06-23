@@ -144,8 +144,12 @@ export default async function WeeksPage({ searchParams }: WeeksPageProps) {
                 <strong className="metric-text">{formatCurrency(honorarios)}</strong>
               </article>
               <article className="metric-card">
-                <small>Pagos</small>
+                <small>Abonos</small>
                 <strong className="metric-text">{formatCurrency(paymentTotal)}</strong>
+              </article>
+              <article className="metric-card">
+                <small>Deuda</small>
+                <strong className="metric-text">{formatCurrency(weekTotal - paymentTotal)}</strong>
               </article>
               <article className="metric-card">
                 <small>Fotos</small>

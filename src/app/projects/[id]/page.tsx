@@ -35,6 +35,7 @@ async function getProject(id: string) {
           },
           laborPayments: { select: { total: true } },
           materialPurchases: { select: { total: true } },
+          payments: { select: { amount: true } },
           workItems: { select: { total: true } },
         },
         orderBy: { startDate: "desc" },
@@ -63,7 +64,8 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     notFound();
   }
 
-  const projectTotal = project.periods.reduce((total, period) => {
+  const honorariosRate = Number(process.env.HONORARIOS_RATE ?? 0.1);
+  const projectSubtotal = project.periods.reduce((total, period) => {
     return (
       total +
       sumTotals(period.workItems) +
@@ -71,6 +73,12 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
       sumTotals(period.materialPurchases)
     );
   }, 0);
+  const honorarios = projectSubtotal * honorariosRate;
+  const projectTotal = projectSubtotal + honorarios;
+  const totalAbonos = project.periods.reduce(
+    (total, period) => total + period.payments.reduce((s, p) => s + Number(p.amount ?? 0), 0), 0,
+  );
+  const deuda = projectTotal - totalAbonos;
   const nextWeekNumber =
     project.periods.reduce((highest, period) => Math.max(highest, period.weekNumber), 0) + 1;
 
@@ -107,12 +115,24 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           </strong>
         </article>
         <article className="metric-card">
-          <small>Total capturado</small>
+          <small>Total obra</small>
+          <strong className="metric-text">{formatCurrency(projectSubtotal)}</strong>
+        </article>
+        <article className="metric-card">
+          <small>Honorarios ({(honorariosRate * 100).toFixed(0)}%)</small>
+          <strong className="metric-text">{formatCurrency(honorarios)}</strong>
+        </article>
+        <article className="metric-card">
+          <small>Gran total</small>
           <strong className="metric-text">{formatCurrency(projectTotal)}</strong>
         </article>
         <article className="metric-card">
-          <small>Fotos</small>
-          <strong>{project._count.photos}</strong>
+          <small>Abonos cliente</small>
+          <strong className="metric-text">{formatCurrency(totalAbonos)}</strong>
+        </article>
+        <article className="metric-card">
+          <small>Deuda</small>
+          <strong className="metric-text">{formatCurrency(deuda)}</strong>
         </article>
       </section>
 
@@ -186,16 +206,20 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                 <th>Destajos</th>
                 <th>Materiales</th>
                 <th>Nomina</th>
-                <th>Total</th>
+                <th>Subtotal</th>
+                <th>Honorarios</th>
+                <th>Abonos</th>
                 <th />
               </tr>
             </thead>
             <tbody>
               {project.periods.map((period) => {
-                const total =
+                const sub =
                   sumTotals(period.workItems) +
                   sumTotals(period.laborPayments) +
                   sumTotals(period.materialPurchases);
+                const hon = sub * honorariosRate;
+                const abonos = period.payments.reduce((s, p) => s + Number(p.amount ?? 0), 0);
 
                 return (
                   <tr key={period.id}>
@@ -209,7 +233,9 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                     <td>{period._count.workItems}</td>
                     <td>{period._count.materialPurchases}</td>
                     <td>{period._count.laborPayments}</td>
-                    <td>{formatCurrency(total)}</td>
+                    <td>{formatCurrency(sub)}</td>
+                    <td>{formatCurrency(hon)}</td>
+                    <td>{formatCurrency(abonos)}</td>
                     <td>
                       <a
                         className="button ghost"
@@ -224,7 +250,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
               {project.periods.length === 0 ? (
                 <tr>
-                  <td colSpan={7}>
+                  <td colSpan={9}>
                     <div className="empty-state">Aun no hay semanas para esta obra.</div>
                   </td>
                 </tr>
