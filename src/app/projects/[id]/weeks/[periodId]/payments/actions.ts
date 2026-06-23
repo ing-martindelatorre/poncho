@@ -3,6 +3,7 @@
 import { MoneyKind, PaymentMethod } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { requireWriteAccess } from "@/lib/authz";
 import { prisma } from "@/lib/db";
 import { assertWeeklyPeriodOpen } from "@/lib/periods";
 
@@ -67,6 +68,7 @@ function weekPath(projectId: string, periodId: string) {
 }
 
 export async function createPayment(formData: FormData) {
+  await requireWriteAccess();
   const projectId = requiredString(formData.get("projectId"), "La obra");
   const weeklyPeriodId = requiredString(formData.get("weeklyPeriodId"), "La semana");
   await assertWeeklyPeriodOpen(weeklyPeriodId);
@@ -93,6 +95,7 @@ export async function createPayment(formData: FormData) {
 }
 
 export async function updatePayment(formData: FormData) {
+  await requireWriteAccess();
   const projectId = requiredString(formData.get("projectId"), "La obra");
   const weeklyPeriodId = requiredString(formData.get("weeklyPeriodId"), "La semana");
   const id = requiredString(formData.get("id"), "El pago");
@@ -118,6 +121,7 @@ export async function updatePayment(formData: FormData) {
 }
 
 export async function deletePayment(formData: FormData) {
+  await requireWriteAccess();
   const projectId = requiredString(formData.get("projectId"), "La obra");
   const weeklyPeriodId = requiredString(formData.get("weeklyPeriodId"), "La semana");
   const id = requiredString(formData.get("id"), "El pago");

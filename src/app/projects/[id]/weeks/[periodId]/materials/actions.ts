@@ -3,6 +3,7 @@
 import { MoneyKind, PurchaseStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { requireWriteAccess } from "@/lib/authz";
 import { prisma } from "@/lib/db";
 import { assertWeeklyPeriodOpen } from "@/lib/periods";
 
@@ -109,6 +110,7 @@ function weekPath(projectId: string, periodId: string) {
 }
 
 export async function createMaterialPurchase(formData: FormData) {
+  await requireWriteAccess();
   const projectId = requiredString(formData.get("projectId"), "La obra");
   const weeklyPeriodId = requiredString(formData.get("weeklyPeriodId"), "La semana");
   await assertWeeklyPeriodOpen(weeklyPeriodId);
@@ -139,6 +141,7 @@ export async function createMaterialPurchase(formData: FormData) {
 }
 
 export async function updateMaterialPurchase(formData: FormData) {
+  await requireWriteAccess();
   const projectId = requiredString(formData.get("projectId"), "La obra");
   const weeklyPeriodId = requiredString(formData.get("weeklyPeriodId"), "La semana");
   const id = requiredString(formData.get("id"), "El material");
@@ -169,6 +172,7 @@ export async function updateMaterialPurchase(formData: FormData) {
 }
 
 export async function deleteMaterialPurchase(formData: FormData) {
+  await requireWriteAccess();
   const projectId = requiredString(formData.get("projectId"), "La obra");
   const weeklyPeriodId = requiredString(formData.get("weeklyPeriodId"), "La semana");
   const id = requiredString(formData.get("id"), "El material");

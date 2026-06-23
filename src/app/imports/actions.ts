@@ -2,9 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { requireManagerAccess } from "@/lib/authz";
 import { prisma } from "@/lib/db";
 import { numberFromCsv, parseCsv, rowsToObjects } from "@/lib/csv";
-import { requireUser } from "@/lib/session";
 
 type ImportRow = Record<string, string>;
 
@@ -23,7 +23,7 @@ function dateFrom(value: string) {
 }
 
 export async function importWeeklySummary(formData: FormData) {
-  await requireUser();
+  await requireManagerAccess();
   const file = formData.get("file");
 
   if (!(file instanceof File) || file.size === 0) {

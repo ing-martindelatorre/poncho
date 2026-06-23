@@ -3,6 +3,7 @@
 import { PeriodStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { requireWriteAccess } from "@/lib/authz";
 import { prisma } from "@/lib/db";
 
 function optionalString(value: FormDataEntryValue | null) {
@@ -46,6 +47,7 @@ function periodStatus(value: FormDataEntryValue | null) {
 }
 
 export async function createWeeklyPeriod(formData: FormData) {
+  await requireWriteAccess();
   const projectId = requiredString(formData.get("projectId"), "La obra");
 
   const period = await prisma.weeklyPeriod.create({
@@ -68,6 +70,7 @@ export async function createWeeklyPeriod(formData: FormData) {
 }
 
 export async function updateWeeklyPeriod(formData: FormData) {
+  await requireWriteAccess();
   const projectId = requiredString(formData.get("projectId"), "La obra");
   const id = requiredString(formData.get("id"), "La semana");
 
@@ -91,6 +94,7 @@ export async function updateWeeklyPeriod(formData: FormData) {
 }
 
 export async function deleteWeeklyPeriod(formData: FormData) {
+  await requireWriteAccess();
   const projectId = requiredString(formData.get("projectId"), "La obra");
   const id = requiredString(formData.get("id"), "La semana");
 
@@ -105,6 +109,7 @@ export async function deleteWeeklyPeriod(formData: FormData) {
 }
 
 export async function toggleWeeklyPeriodStatus(formData: FormData) {
+  await requireWriteAccess();
   const projectId = requiredString(formData.get("projectId"), "La obra");
   const id = requiredString(formData.get("id"), "La semana");
   const status = periodStatus(formData.get("status"));

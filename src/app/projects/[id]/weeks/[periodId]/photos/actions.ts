@@ -6,6 +6,7 @@ import path from "node:path";
 import { PhotoLinkType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { requireWriteAccess } from "@/lib/authz";
 import { prisma } from "@/lib/db";
 import { assertWeeklyPeriodOpen } from "@/lib/periods";
 import { extensionFromMime, safeJoinUploadPath } from "@/lib/uploads";
@@ -30,6 +31,7 @@ function weekPath(projectId: string, periodId: string) {
 }
 
 export async function createPhoto(formData: FormData) {
+  await requireWriteAccess();
   const projectId = requiredString(formData.get("projectId"), "La obra");
   const weeklyPeriodId = requiredString(formData.get("weeklyPeriodId"), "La semana");
   const file = formData.get("photo");
@@ -73,6 +75,7 @@ export async function createPhoto(formData: FormData) {
 }
 
 export async function deletePhoto(formData: FormData) {
+  await requireWriteAccess();
   const projectId = requiredString(formData.get("projectId"), "La obra");
   const weeklyPeriodId = requiredString(formData.get("weeklyPeriodId"), "La semana");
   const id = requiredString(formData.get("id"), "La foto");

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { requireManagerAccess } from "@/lib/authz";
 import { prisma } from "@/lib/db";
 
 function optionalString(value: FormDataEntryValue | null) {
@@ -24,6 +25,7 @@ function booleanFrom(value: FormDataEntryValue | null) {
 }
 
 export async function createSupplier(formData: FormData) {
+  await requireManagerAccess();
   await prisma.supplier.create({
     data: {
       email: optionalString(formData.get("email")),
@@ -39,6 +41,7 @@ export async function createSupplier(formData: FormData) {
 }
 
 export async function updateSupplier(formData: FormData) {
+  await requireManagerAccess();
   const id = requiredString(formData.get("id"), "El proveedor");
 
   await prisma.supplier.update({
@@ -58,6 +61,7 @@ export async function updateSupplier(formData: FormData) {
 }
 
 export async function deleteSupplier(formData: FormData) {
+  await requireManagerAccess();
   const id = requiredString(formData.get("id"), "El proveedor");
 
   await prisma.supplier.delete({
@@ -69,6 +73,7 @@ export async function deleteSupplier(formData: FormData) {
 }
 
 export async function createContractor(formData: FormData) {
+  await requireManagerAccess();
   await prisma.contractor.create({
     data: {
       email: optionalString(formData.get("email")),
@@ -84,6 +89,7 @@ export async function createContractor(formData: FormData) {
 }
 
 export async function updateContractor(formData: FormData) {
+  await requireManagerAccess();
   const id = requiredString(formData.get("id"), "El contratista");
 
   await prisma.contractor.update({
@@ -103,6 +109,7 @@ export async function updateContractor(formData: FormData) {
 }
 
 export async function deleteContractor(formData: FormData) {
+  await requireManagerAccess();
   const id = requiredString(formData.get("id"), "El contratista");
 
   await prisma.contractor.delete({

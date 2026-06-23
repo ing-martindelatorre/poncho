@@ -3,6 +3,7 @@
 import { ProjectStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { requireManagerAccess } from "@/lib/authz";
 import { prisma } from "@/lib/db";
 
 function optionalString(value: FormDataEntryValue | null) {
@@ -58,6 +59,7 @@ function projectStatus(value: FormDataEntryValue | null) {
 }
 
 export async function createProject(formData: FormData) {
+  await requireManagerAccess();
   const project = await prisma.project.create({
     data: {
       address: optionalString(formData.get("address")),
@@ -77,6 +79,7 @@ export async function createProject(formData: FormData) {
 }
 
 export async function updateProject(formData: FormData) {
+  await requireManagerAccess();
   const id = requiredString(formData.get("id"), "La obra");
 
   await prisma.project.update({
@@ -99,6 +102,7 @@ export async function updateProject(formData: FormData) {
 }
 
 export async function deleteProject(formData: FormData) {
+  await requireManagerAccess();
   const id = requiredString(formData.get("id"), "La obra");
 
   await prisma.project.delete({

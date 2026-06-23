@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { requireWriteAccess } from "@/lib/authz";
 import { prisma } from "@/lib/db";
 import { assertWeeklyPeriodOpen } from "@/lib/periods";
 
@@ -47,6 +48,7 @@ function materialPath(projectId: string, periodId: string, materialId: string) {
 }
 
 export async function createMaterialDelivery(formData: FormData) {
+  await requireWriteAccess();
   const projectId = requiredString(formData.get("projectId"), "La obra");
   const weeklyPeriodId = requiredString(formData.get("weeklyPeriodId"), "La semana");
   const materialPurchaseId = requiredString(formData.get("materialPurchaseId"), "El material");
@@ -69,6 +71,7 @@ export async function createMaterialDelivery(formData: FormData) {
 }
 
 export async function deleteMaterialDelivery(formData: FormData) {
+  await requireWriteAccess();
   const projectId = requiredString(formData.get("projectId"), "La obra");
   const weeklyPeriodId = requiredString(formData.get("weeklyPeriodId"), "La semana");
   const materialPurchaseId = requiredString(formData.get("materialPurchaseId"), "El material");
