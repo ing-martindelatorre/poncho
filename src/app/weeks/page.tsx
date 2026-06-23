@@ -92,13 +92,16 @@ export default async function WeeksPage({ searchParams }: WeeksPageProps) {
       ) : null}
 
       {weeks.map((week) => {
+        const honorariosRate = Number(process.env.HONORARIOS_RATE ?? 0.1);
         const workTotal = sumTotals(week.workItems);
         const laborTotal = sumTotals(week.laborPayments);
         const materialTotal = sumTotals(week.materialPurchases);
         const paymentTotal = week.payments.reduce(
           (s, p) => s + Number(p.amount ?? 0), 0,
         );
-        const weekTotal = workTotal + laborTotal + materialTotal;
+        const subtotal = workTotal + laborTotal + materialTotal;
+        const honorarios = subtotal * honorariosRate;
+        const weekTotal = subtotal + honorarios;
 
         return (
           <section className="panel section-gap" key={week.id}>
@@ -135,6 +138,10 @@ export default async function WeeksPage({ searchParams }: WeeksPageProps) {
               <article className="metric-card">
                 <small>Materiales</small>
                 <strong className="metric-text">{formatCurrency(materialTotal)}</strong>
+              </article>
+              <article className="metric-card">
+                <small>Honorarios</small>
+                <strong className="metric-text">{formatCurrency(honorarios)}</strong>
               </article>
               <article className="metric-card">
                 <small>Pagos</small>

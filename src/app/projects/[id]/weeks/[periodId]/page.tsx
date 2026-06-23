@@ -1,6 +1,7 @@
 import { PeriodStatus } from "@prisma/client";
 import { notFound } from "next/navigation";
 import { AppFrame } from "@/components/app-frame";
+import { ConfirmDelete } from "@/components/confirm-delete";
 import { prisma } from "@/lib/db";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/format";
 import { deleteWeeklyPeriod, toggleWeeklyPeriodStatus } from "../actions";
@@ -166,13 +167,15 @@ export default async function WeekPage({ params }: WeekPageProps) {
             </button>
           </form>
 
-          <form action={deleteWeeklyPeriod} className="danger-zone">
+          <ConfirmDelete action={deleteWeeklyPeriod} message="Eliminar esta semana borrara todos sus destajos, materiales, nomina y fotos. Continuar?">
             <input name="projectId" type="hidden" value={projectId} />
             <input name="id" type="hidden" value={period.id} />
-            <button className="button danger" type="submit">
-              Eliminar semana
-            </button>
-          </form>
+            <div className="danger-zone">
+              <button className="button danger" type="submit">
+                Eliminar semana
+              </button>
+            </div>
+          </ConfirmDelete>
         </aside>
       </section>
 
@@ -268,14 +271,14 @@ export default async function WeekPage({ params }: WeekPageProps) {
                         >
                           Editar
                         </a>
-                        <form action={deleteWorkItem}>
+                        <ConfirmDelete action={deleteWorkItem}>
                           <input name="projectId" type="hidden" value={projectId} />
                           <input name="weeklyPeriodId" type="hidden" value={period.id} />
                           <input name="id" type="hidden" value={item.id} />
                           <button className="button danger" type="submit">
                             Eliminar
                           </button>
-                        </form>
+                        </ConfirmDelete>
                       </>
                     ) : (
                       <span className="badge">Lectura</span>
@@ -355,14 +358,14 @@ export default async function WeekPage({ params }: WeekPageProps) {
                         >
                           Editar
                         </a>
-                        <form action={deleteMaterialPurchase}>
+                        <ConfirmDelete action={deleteMaterialPurchase}>
                           <input name="projectId" type="hidden" value={projectId} />
                           <input name="weeklyPeriodId" type="hidden" value={period.id} />
                           <input name="id" type="hidden" value={purchase.id} />
                           <button className="button danger" type="submit">
                             Eliminar
                           </button>
-                        </form>
+                        </ConfirmDelete>
                       </>
                     ) : (
                       <a
@@ -445,14 +448,14 @@ export default async function WeekPage({ params }: WeekPageProps) {
                         >
                           Editar
                         </a>
-                        <form action={deleteLaborPayment}>
+                        <ConfirmDelete action={deleteLaborPayment}>
                           <input name="projectId" type="hidden" value={projectId} />
                           <input name="weeklyPeriodId" type="hidden" value={period.id} />
                           <input name="id" type="hidden" value={payment.id} />
                           <button className="button danger" type="submit">
                             Eliminar
                           </button>
-                        </form>
+                        </ConfirmDelete>
                       </>
                     ) : (
                       <span className="badge">Lectura</span>
@@ -526,14 +529,14 @@ export default async function WeekPage({ params }: WeekPageProps) {
                         >
                           Editar
                         </a>
-                        <form action={deletePayment}>
+                        <ConfirmDelete action={deletePayment}>
                           <input name="projectId" type="hidden" value={projectId} />
                           <input name="weeklyPeriodId" type="hidden" value={period.id} />
                           <input name="id" type="hidden" value={payment.id} />
                           <button className="button danger" type="submit">
                             Eliminar
                           </button>
-                        </form>
+                        </ConfirmDelete>
                       </>
                     ) : (
                       <span className="badge">Lectura</span>
@@ -582,14 +585,14 @@ export default async function WeekPage({ params }: WeekPageProps) {
                 <small>{photo.fileName}</small>
               </div>
               {!isClosed ? (
-                <form action={deletePhoto}>
+                <ConfirmDelete action={deletePhoto}>
                   <input name="projectId" type="hidden" value={projectId} />
                   <input name="weeklyPeriodId" type="hidden" value={period.id} />
                   <input name="id" type="hidden" value={photo.id} />
                   <button className="button danger" type="submit">
                     Eliminar
                   </button>
-                </form>
+                </ConfirmDelete>
               ) : null}
             </article>
           ))}

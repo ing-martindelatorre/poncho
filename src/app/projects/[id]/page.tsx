@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { AppFrame } from "@/components/app-frame";
+import { ConfirmDelete } from "@/components/confirm-delete";
 import { prisma } from "@/lib/db";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/format";
 import { deleteProject } from "../actions";
@@ -148,12 +149,14 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
             </div>
           </dl>
 
-          <form action={deleteProject} className="danger-zone">
+          <ConfirmDelete action={deleteProject} message="Eliminar esta obra borrara todas sus semanas, destajos, materiales y fotos. Continuar?">
             <input name="id" type="hidden" value={project.id} />
-            <button className="button danger" type="submit">
-              Eliminar obra
-            </button>
-          </form>
+            <div className="danger-zone">
+              <button className="button danger" type="submit">
+                Eliminar obra
+              </button>
+            </div>
+          </ConfirmDelete>
         </aside>
       </section>
 

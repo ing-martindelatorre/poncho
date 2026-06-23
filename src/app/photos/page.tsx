@@ -1,6 +1,8 @@
 import { AppFrame } from "@/components/app-frame";
+import { ConfirmDelete } from "@/components/confirm-delete";
 import { prisma } from "@/lib/db";
 import { formatDate } from "@/lib/format";
+import { createPhoto, deletePhoto } from "../projects/[id]/weeks/[periodId]/photos/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +17,15 @@ async function getProjects() {
   });
 }
 
-async function getPhotosByWeek(projectId: string) {
+async function getOpenWeeks(projectId: string) {
+  return prisma.weeklyPeriod.findMany({
+    select: { id: true, weekNumber: true, label: true, status: true },
+    where: { projectId },
+    orderBy: { startDate: "desc" },
+  });
+}
+
+async function getWeeksWithPhotos(projectId: string) {
   return prisma.weeklyPeriod.findMany({
     include: {
       photos: { orderBy: { createdAt: "desc" } },
@@ -37,8 +47,10 @@ export default async function PhotosPage({ searchParams }: PhotosPageProps) {
   const projects = await getProjects();
   const selectedId = params.project ?? "";
   const selectedProject = projects.find((p) => p.id === selectedId);
-  const weeksWithPhotos = selectedId ? await getPhotosByWeek(selectedId) : [];
+  const allWeeks = selectedId ? await getOpenWeeks(selectedId) : [];
+  const weeksWithPhotos = selectedId ? await getWeeksWithPhotos(selectedId) : [];
   const totalPhotos = selectedId ? await getProjectPhotoCount(selectedId) : 0;
+  const openWeeks = allWeeks.filter((w) => w.status === "OPEN");
 
   return (
     <AppFrame active="photos">
@@ -85,10 +97,53 @@ export default async function PhotosPage({ searchParams }: PhotosPageProps) {
         </section>
       ) : null}
 
+      {selectedProject && openWeeks.length > 0 ? (
+        <section className="panel" style={{ marginBottom: 18 }}>
+          <div className="panel-header">
+            <div>
+              <p className="eyebrow">Subir evidencia</p>
+              <h2>Nueva foto</h2>
+            </div>
+          </div>
+          <form action={createPhoto} className="form-grid">
+            <input name="projectId" type="hidden" value={selectedId} />
+            <label className="field">
+              <span>Semana</span>
+              <select name="weeklyPeriodId" required>
+                {openWeeks.map((w) => (
+                  <option key={w.id} value={w.id}>
+                    Semana {w.weekNumber} — {w.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="field">
+              <span>Foto</span>
+              <input accept="image/*" name="photo" required type="file" />
+            </label>
+            <label className="field span-2">
+              <span>Comentario</span>
+              <input name="caption" placeholder="Descripcion de la foto" type="text" />
+            </label>
+            <div className="form-actions span-2">
+              <button className="button primary" type="submit">
+                Subir foto
+              </button>
+            </div>
+          </form>
+        </section>
+      ) : null}
+
+      {selectedProject && openWeeks.length === 0 && allWeeks.length > 0 ? (
+        <section className="locked-banner">
+          Todas las semanas estan cerradas. Abre una semana para subir fotos.
+        </section>
+      ) : null}
+
       {selectedProject && weeksWithPhotos.length === 0 ? (
         <section className="panel">
           <div className="empty-state">
-            No hay fotos para esta obra. Sube fotos desde la vista de cada semana.
+            No hay fotos para esta obra.
           </div>
         </section>
       ) : null}
@@ -105,15 +160,7 @@ export default async function PhotosPage({ searchParams }: PhotosPageProps) {
                 {formatDate(week.startDate)} - {formatDate(week.endDate)}
               </small>
             </div>
-            <div className="row-actions">
-              <span className="badge">{week.photos.length} fotos</span>
-              <a
-                className="button ghost"
-                href={`/projects/${selectedId}/weeks/${week.id}`}
-              >
-                Ir a semana
-              </a>
-            </div>
+            <span className="badge">{week.photos.length} fotos</span>
           </div>
 
           <div className="photo-grid">
@@ -127,6 +174,16 @@ export default async function PhotosPage({ searchParams }: PhotosPageProps) {
                   <strong>{photo.caption ?? "Sin comentario"}</strong>
                   <small>{photo.fileName}</small>
                 </div>
+                {week.status === "OPEN" ? (
+                  <ConfirmDelete action={deletePhoto}>
+                    <input name="projectId" type="hidden" value={selectedId} />
+                    <input name="weeklyPeriodId" type="hidden" value={week.id} />
+                    <input name="id" type="hidden" value={photo.id} />
+                    <button className="button danger" type="submit">
+                      Eliminar
+                    </button>
+                  </ConfirmDelete>
+                ) : null}
               </article>
             ))}
           </div>
