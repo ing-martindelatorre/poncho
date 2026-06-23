@@ -2,9 +2,11 @@ import { PeriodStatus } from "@prisma/client";
 import { notFound } from "next/navigation";
 import { AppFrame } from "@/components/app-frame";
 import { prisma } from "@/lib/db";
-import { formatCurrency, formatDate } from "@/lib/format";
+import { formatCurrency, formatDate, formatNumber } from "@/lib/format";
 import { deleteWeeklyPeriod, toggleWeeklyPeriodStatus } from "../actions";
 import { WeekForm } from "../week-form";
+import { deleteWorkItem } from "./work-items/actions";
+import { WorkItemForm } from "./work-items/work-item-form";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +22,9 @@ async function getPeriod(projectId: string, id: string) {
       payments: true,
       photos: true,
       project: true,
-      workItems: true,
+      workItems: {
+        orderBy: { createdAt: "desc" },
+      },
     },
     where: { id, projectId },
   });
@@ -46,6 +50,10 @@ export default async function WeekPage({ params }: WeekPageProps) {
     0,
   );
   const total = workTotal + laborTotal + materialTotal;
+  const moneyLabels = {
+    CASH: "Efectivo",
+    INVOICED: "Facturado",
+  };
 
   return (
     <AppFrame active="weeks">
@@ -163,6 +171,83 @@ export default async function WeekPage({ params }: WeekPageProps) {
           <h3>Fotos</h3>
           <p>Evidencia asociada al corte semanal.</p>
         </article>
+      </section>
+
+      <section className="panel section-gap">
+        <div className="panel-header">
+          <div>
+            <p className="eyebrow">Destajos</p>
+            <h2>Conceptos de la semana</h2>
+          </div>
+          <span className="badge">{formatCurrency(workTotal)}</span>
+        </div>
+
+        <div className="inline-create">
+          <div>
+            <p className="eyebrow">Nuevo destajo</p>
+            <h3>Agregar concepto</h3>
+          </div>
+          <WorkItemForm projectId={projectId} weeklyPeriodId={period.id} />
+        </div>
+
+        <div className="table-wrap">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Descripcion</th>
+                <th>Categoria</th>
+                <th>Unidad</th>
+                <th>Volumen</th>
+                <th>Precio</th>
+                <th>Total</th>
+                <th>Tipo</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {period.workItems.map((item) => (
+                <tr key={item.id}>
+                  <td>
+                    <strong>{item.description}</strong>
+                    <small>{item.notes ?? "Sin notas"}</small>
+                  </td>
+                  <td>{item.category}</td>
+                  <td>{item.unit}</td>
+                  <td>{formatNumber(item.volume)}</td>
+                  <td>{formatCurrency(item.unitPrice)}</td>
+                  <td>{formatCurrency(item.total)}</td>
+                  <td>
+                    <span className="badge">{moneyLabels[item.moneyKind]}</span>
+                  </td>
+                  <td className="row-actions">
+                    <a
+                      className="button ghost"
+                      href={`/projects/${projectId}/weeks/${period.id}/work-items/${item.id}`}
+                    >
+                      Editar
+                    </a>
+                    <form action={deleteWorkItem}>
+                      <input name="projectId" type="hidden" value={projectId} />
+                      <input name="weeklyPeriodId" type="hidden" value={period.id} />
+                      <input name="id" type="hidden" value={item.id} />
+                      <button className="button danger" type="submit">
+                        Eliminar
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              ))}
+
+              {period.workItems.length === 0 ? (
+                <tr>
+                  <td colSpan={8}>
+                    <div className="empty-state">Aun no hay destajos en esta semana.</div>
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
       </section>
     </AppFrame>
   );

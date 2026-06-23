@@ -50,6 +50,8 @@ Objetivo:
 
 ## Fase 4: Destajos
 
+Estado: completada.
+
 Objetivo:
 
 - capturar conceptos de destajo

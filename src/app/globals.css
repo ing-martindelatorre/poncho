@@ -454,6 +454,12 @@ h3 {
   padding: 16px;
 }
 
+.row-actions {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
 @media (max-width: 980px) {
   .app-shell {
     grid-template-columns: 1fr;
