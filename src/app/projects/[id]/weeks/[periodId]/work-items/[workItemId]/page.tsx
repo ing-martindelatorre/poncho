@@ -32,7 +32,7 @@ export default async function WorkItemPage({ params }: WorkItemPageProps) {
   }
 
   return (
-    <AppFrame active="work-items">
+    <AppFrame active="weeks">
       <header className="topbar">
         <div>
           <p className="eyebrow">
