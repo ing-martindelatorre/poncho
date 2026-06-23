@@ -1,7 +1,14 @@
 import type { ReactNode } from "react";
 
 type AppFrameProps = {
-  active: "dashboard" | "projects" | "weeks" | "work-items" | "materials" | "photos";
+  active:
+    | "catalogs"
+    | "dashboard"
+    | "projects"
+    | "weeks"
+    | "work-items"
+    | "materials"
+    | "photos";
   children: ReactNode;
 };
 
@@ -12,6 +19,7 @@ const navItems = [
   { key: "work-items", href: "/projects", label: "Destajos" },
   { key: "materials", href: "/projects", label: "Materiales" },
   { key: "photos", href: "/projects", label: "Fotos" },
+  { key: "catalogs", href: "/catalogs", label: "Catalogos" },
 ] as const;
 
 export function AppFrame({ active, children }: AppFrameProps) {

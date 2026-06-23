@@ -70,6 +70,17 @@ Objetivo:
 - controlar prepagos
 - controlar entregas pendientes
 
+## Fase 5.1: Catalogos
+
+Estado: completada.
+
+Objetivo:
+
+- administrar proveedores
+- administrar contratistas
+- marcar activos e inactivos
+- preparar seleccion estructurada en modulos operativos
+
 ## Fase 6: Nomina y Pagos
 
 Estado: completada.
