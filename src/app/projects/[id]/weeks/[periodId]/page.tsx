@@ -5,6 +5,8 @@ import { prisma } from "@/lib/db";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/format";
 import { deleteWeeklyPeriod, toggleWeeklyPeriodStatus } from "../actions";
 import { WeekForm } from "../week-form";
+import { deleteMaterialPurchase } from "./materials/actions";
+import { MaterialForm } from "./materials/material-form";
 import { deleteWorkItem } from "./work-items/actions";
 import { WorkItemForm } from "./work-items/work-item-form";
 
@@ -18,7 +20,12 @@ async function getPeriod(projectId: string, id: string) {
   return prisma.weeklyPeriod.findFirst({
     include: {
       laborPayments: true,
-      materialPurchases: true,
+      materialPurchases: {
+        include: {
+          supplier: true,
+        },
+        orderBy: { createdAt: "desc" },
+      },
       payments: true,
       photos: true,
       project: true,
@@ -53,6 +60,11 @@ export default async function WeekPage({ params }: WeekPageProps) {
   const moneyLabels = {
     CASH: "Efectivo",
     INVOICED: "Facturado",
+  };
+  const purchaseStatusLabels = {
+    DELIVERED: "Entregado",
+    ORDERED: "Ordenado",
+    PARTIAL: "Parcial",
   };
 
   return (
@@ -242,6 +254,85 @@ export default async function WeekPage({ params }: WeekPageProps) {
                 <tr>
                   <td colSpan={8}>
                     <div className="empty-state">Aun no hay destajos en esta semana.</div>
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="panel section-gap">
+        <div className="panel-header">
+          <div>
+            <p className="eyebrow">Materiales</p>
+            <h2>Compras y prepagos</h2>
+          </div>
+          <span className="badge">{formatCurrency(materialTotal)}</span>
+        </div>
+
+        <div className="inline-create">
+          <div>
+            <p className="eyebrow">Nuevo material</p>
+            <h3>Agregar compra o prepago</h3>
+          </div>
+          <MaterialForm projectId={projectId} weeklyPeriodId={period.id} />
+        </div>
+
+        <div className="table-wrap">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Descripcion</th>
+                <th>Proveedor</th>
+                <th>Folio</th>
+                <th>Total</th>
+                <th>Pagado</th>
+                <th>Estado</th>
+                <th>Tipo</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {period.materialPurchases.map((purchase) => (
+                <tr key={purchase.id}>
+                  <td>
+                    <strong>{purchase.description}</strong>
+                    <small>{purchase.notes ?? "Sin notas"}</small>
+                  </td>
+                  <td>{purchase.supplier?.name ?? "Sin proveedor"}</td>
+                  <td>{purchase.invoiceNumber ?? "-"}</td>
+                  <td>{formatCurrency(purchase.total)}</td>
+                  <td>{formatCurrency(purchase.paidAmount)}</td>
+                  <td>
+                    <span className="badge">{purchaseStatusLabels[purchase.status]}</span>
+                  </td>
+                  <td>
+                    <span className="badge">{moneyLabels[purchase.moneyKind]}</span>
+                  </td>
+                  <td className="row-actions">
+                    <a
+                      className="button ghost"
+                      href={`/projects/${projectId}/weeks/${period.id}/materials/${purchase.id}`}
+                    >
+                      Editar
+                    </a>
+                    <form action={deleteMaterialPurchase}>
+                      <input name="projectId" type="hidden" value={projectId} />
+                      <input name="weeklyPeriodId" type="hidden" value={period.id} />
+                      <input name="id" type="hidden" value={purchase.id} />
+                      <button className="button danger" type="submit">
+                        Eliminar
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              ))}
+
+              {period.materialPurchases.length === 0 ? (
+                <tr>
+                  <td colSpan={8}>
+                    <div className="empty-state">Aun no hay materiales en esta semana.</div>
                   </td>
                 </tr>
               ) : null}

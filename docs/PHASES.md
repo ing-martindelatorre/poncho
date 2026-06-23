@@ -61,6 +61,8 @@ Objetivo:
 
 ## Fase 5: Materiales
 
+Estado: completada.
+
 Objetivo:
 
 - capturar material efectivo y facturado
