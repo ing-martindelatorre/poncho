@@ -39,6 +39,8 @@ Campos base:
 
 ## Fase 3: Semanas
 
+Estado: completada.
+
 Objetivo:
 
 - crear cortes semanales por obra

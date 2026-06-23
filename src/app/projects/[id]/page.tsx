@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/format";
 import { deleteProject } from "../actions";
 import { ProjectForm } from "../project-form";
+import { WeekForm } from "./weeks/week-form";
 
 export const dynamic = "force-dynamic";
 
@@ -69,6 +70,8 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
       sumTotals(period.materialPurchases)
     );
   }, 0);
+  const nextWeekNumber =
+    project.periods.reduce((highest, period) => Math.max(highest, period.weekNumber), 0) + 1;
 
   return (
     <AppFrame active="projects">
@@ -157,7 +160,15 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
             <p className="eyebrow">Cortes</p>
             <h2>Semanas registradas</h2>
           </div>
-          <span className="badge">Modulo Semanas sigue</span>
+          <span className="badge">Modulo Semanas</span>
+        </div>
+
+        <div className="inline-create">
+          <div>
+            <p className="eyebrow">Nueva semana</p>
+            <h3>Crear corte semanal</h3>
+          </div>
+          <WeekForm projectId={project.id} suggestedWeekNumber={nextWeekNumber} />
         </div>
 
         <div className="table-wrap">
@@ -170,6 +181,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                 <th>Materiales</th>
                 <th>Nomina</th>
                 <th>Total</th>
+                <th />
               </tr>
             </thead>
             <tbody>
@@ -192,13 +204,21 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                     <td>{period._count.materialPurchases}</td>
                     <td>{period._count.laborPayments}</td>
                     <td>{formatCurrency(total)}</td>
+                    <td>
+                      <a
+                        className="button ghost"
+                        href={`/projects/${project.id}/weeks/${period.id}`}
+                      >
+                        Abrir
+                      </a>
+                    </td>
                   </tr>
                 );
               })}
 
               {project.periods.length === 0 ? (
                 <tr>
-                  <td colSpan={6}>
+                  <td colSpan={7}>
                     <div className="empty-state">Aun no hay semanas para esta obra.</div>
                   </td>
                 </tr>
