@@ -1,11 +1,66 @@
 import {
   createContractor,
   createSupplier,
+  createWorkCatalogItem,
   deleteContractor,
   deleteSupplier,
+  deleteWorkCatalogItem,
   updateContractor,
   updateSupplier,
+  updateWorkCatalogItem,
 } from "./actions";
+
+type WorkCatalogItem = {
+  active: boolean;
+  category: string;
+  description: string;
+  id: string;
+  unit: string;
+  unitPrice: unknown;
+};
+
+export function WorkCatalogForm({ item }: { item?: WorkCatalogItem }) {
+  const action = item ? updateWorkCatalogItem : createWorkCatalogItem;
+
+  return (
+    <form action={action} className="compact-form">
+      {item ? <input name="id" type="hidden" value={item.id} /> : null}
+
+      <input name="category" placeholder="Categoria (Albanileria)" required defaultValue={item?.category ?? ""} />
+      <input name="description" placeholder="Concepto (Enjarre de pared)" required defaultValue={item?.description ?? ""} />
+      <input name="unit" placeholder="Unidad (M2, ML, PZA)" required defaultValue={item?.unit ?? ""} />
+      <input
+        min="0"
+        name="unitPrice"
+        placeholder="Precio unitario"
+        required
+        step="0.01"
+        type="number"
+        defaultValue={item ? String(item.unitPrice) : ""}
+      />
+      {item ? (
+        <select name="active" defaultValue={String(item.active)}>
+          <option value="true">Activo</option>
+          <option value="false">Inactivo</option>
+        </select>
+      ) : null}
+      <button className="button primary" type="submit">
+        {item ? "Guardar" : "Agregar"}
+      </button>
+    </form>
+  );
+}
+
+export function WorkCatalogDeleteForm({ item }: { item: WorkCatalogItem }) {
+  return (
+    <form action={deleteWorkCatalogItem}>
+      <input name="id" type="hidden" value={item.id} />
+      <button className="button danger" type="submit">
+        Eliminar
+      </button>
+    </form>
+  );
+}
 
 type Supplier = {
   active: boolean;

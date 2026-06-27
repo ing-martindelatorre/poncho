@@ -23,6 +23,13 @@ type WeekPageProps = {
   params: Promise<{ id: string; periodId: string }>;
 };
 
+async function getWorkCatalog() {
+  return prisma.workCatalog.findMany({
+    where: { active: true },
+    orderBy: [{ category: "asc" }, { description: "asc" }],
+  });
+}
+
 async function getPeriod(projectId: string, id: string) {
   return prisma.weeklyPeriod.findFirst({
     include: {
@@ -56,7 +63,10 @@ function sumTotals(items: Array<{ total: unknown }>) {
 
 export default async function WeekPage({ params }: WeekPageProps) {
   const { id: projectId, periodId } = await params;
-  const period = await getPeriod(projectId, periodId);
+  const [period, workCatalog] = await Promise.all([
+    getPeriod(projectId, periodId),
+    getWorkCatalog(),
+  ]);
 
   if (!period) {
     notFound();
@@ -229,7 +239,7 @@ export default async function WeekPage({ params }: WeekPageProps) {
               <p className="eyebrow">Nuevo destajo</p>
               <h3>Agregar concepto</h3>
             </div>
-            <WorkItemForm projectId={projectId} weeklyPeriodId={period.id} />
+            <WorkItemForm catalog={workCatalog} projectId={projectId} weeklyPeriodId={period.id} />
           </div>
         ) : null}
 

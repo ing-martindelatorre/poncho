@@ -55,6 +55,20 @@ enum UserRole {
   READ_ONLY
 }
 
+model WorkCatalog {
+  id          String   @id @default(cuid())
+  category    String
+  description String
+  unit        String
+  unitPrice   Decimal  @map("unit_price") @db.Decimal(14, 2)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([active])
+  @@map("work_catalogs")
+}
+
 model User {
   id           String   @id @default(cuid())
   name         String

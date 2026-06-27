@@ -5,25 +5,30 @@ import {
   ContractorForm,
   SupplierDeleteForm,
   SupplierForm,
+  WorkCatalogDeleteForm,
+  WorkCatalogForm,
 } from "./catalog-forms";
 
 export const dynamic = "force-dynamic";
 
 async function getCatalogs() {
-  const [suppliers, contractors] = await prisma.$transaction([
+  const [suppliers, contractors, workCatalog] = await prisma.$transaction([
     prisma.supplier.findMany({
       orderBy: [{ active: "desc" }, { name: "asc" }],
     }),
     prisma.contractor.findMany({
       orderBy: [{ active: "desc" }, { name: "asc" }],
     }),
+    prisma.workCatalog.findMany({
+      orderBy: [{ active: "desc" }, { category: "asc" }, { description: "asc" }],
+    }),
   ]);
 
-  return { contractors, suppliers };
+  return { contractors, suppliers, workCatalog };
 }
 
 export default async function CatalogsPage() {
-  const { contractors, suppliers } = await getCatalogs();
+  const { contractors, suppliers, workCatalog } = await getCatalogs();
 
   return (
     <AppFrame active="catalogs">
@@ -33,6 +38,56 @@ export default async function CatalogsPage() {
           <h1>Proveedores y contratistas</h1>
         </div>
       </header>
+
+      <section className="panel section-gap">
+        <div className="panel-header">
+          <div>
+            <p className="eyebrow">Catalogo de conceptos</p>
+            <h2>{workCatalog.length} conceptos</h2>
+          </div>
+        </div>
+
+        <div className="inline-create">
+          <WorkCatalogForm />
+        </div>
+
+        <div className="table-wrap">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Categoria</th>
+                <th>Concepto</th>
+                <th>Unidad</th>
+                <th>Precio unitario</th>
+                <th>Estado</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {workCatalog.map((item) => (
+                <tr key={item.id}>
+                  <td>{item.category}</td>
+                  <td><strong>{item.description}</strong></td>
+                  <td>{item.unit}</td>
+                  <td>{String(item.unitPrice)}</td>
+                  <td><span className="badge">{item.active ? "Activo" : "Inactivo"}</span></td>
+                  <td className="row-actions">
+                    <WorkCatalogForm item={item} />
+                    <WorkCatalogDeleteForm item={item} />
+                  </td>
+                </tr>
+              ))}
+              {workCatalog.length === 0 ? (
+                <tr>
+                  <td colSpan={6}>
+                    <div className="empty-state">Aun no hay conceptos en el catalogo.</div>
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
       <section className="split-layout">
         <div className="panel">
