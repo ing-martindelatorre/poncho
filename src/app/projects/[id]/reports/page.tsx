@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { AppFrame } from "@/components/app-frame";
+import { ExportPdfButton } from "@/components/export-pdf-button";
 import { PrintButton } from "@/components/print-button";
 import { prisma } from "@/lib/db";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/format";
@@ -95,6 +96,30 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
           <a className="button ghost no-print" href={`/projects/${project.id}/reports/export`}>
             Exportar CSV
           </a>
+          <a className="button ghost no-print" href={`/projects/${project.id}/reports/export/excel`}>
+            Exportar Excel
+          </a>
+          <ExportPdfButton
+            project={{
+              address: project.address,
+              builtAreaM2: project.builtAreaM2 ? String(project.builtAreaM2) : null,
+              clientName: project.clientName,
+              name: project.name,
+            }}
+            rows={rows.map((r) => ({
+              cash: r.cash,
+              debt: r.debt,
+              honorarios: r.honorarios,
+              invoiced: r.invoiced,
+              label: r.label,
+              payments: r.payments,
+              total: r.total,
+              weekNumber: r.period.weekNumber,
+              startDate: r.period.startDate.toISOString(),
+              endDate: r.period.endDate.toISOString(),
+            }))}
+            totals={totals}
+          />
           <PrintButton />
         </div>
       </header>
