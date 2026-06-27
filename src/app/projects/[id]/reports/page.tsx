@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { AppFrame } from "@/components/app-frame";
 import { ExportPdfButton } from "@/components/export-pdf-button";
+import { ExportWeekPdfButton } from "@/components/export-week-pdf-button";
 import { PrintButton } from "@/components/print-button";
 import { prisma } from "@/lib/db";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/format";
@@ -18,7 +19,7 @@ async function getProject(id: string) {
       periods: {
         include: {
           laborPayments: true,
-          materialPurchases: true,
+          materialPurchases: { include: { supplier: true } },
           payments: true,
           workItems: true,
         },
@@ -181,11 +182,15 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
                 <th>Total</th>
                 <th>Pagos</th>
                 <th>Deuda</th>
+                <th className="no-print">Exportar</th>
               </tr>
             </thead>
             <tbody>
-              {rows.map((row) => (
-                <tr key={row.period.id}>
+              {rows.map((row) => {
+                const subtotal = row.cash + row.invoiced;
+                const periodId = row.period.id;
+                return (
+                <tr key={periodId}>
                   <td>
                     <strong>Semana {row.period.weekNumber}</strong>
                     <small>{row.label}</small>
@@ -199,12 +204,54 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
                   <td>{formatCurrency(row.total)}</td>
                   <td>{formatCurrency(row.payments)}</td>
                   <td>{formatCurrency(row.debt)}</td>
+                  <td className="row-actions no-print">
+                    <a className="button ghost" href={`/projects/${project.id}/weeks/${periodId}/export/csv`}>CSV</a>
+                    <a className="button ghost" href={`/projects/${project.id}/weeks/${periodId}/export/excel`}>Excel</a>
+                    <ExportWeekPdfButton
+                      honorariosRate={honorariosRate}
+                      period={{
+                        endDate: row.period.endDate.toISOString(),
+                        label: row.label,
+                        startDate: row.period.startDate.toISOString(),
+                        weekNumber: row.period.weekNumber,
+                      }}
+                      project={{ address: project.address, clientName: project.clientName, name: project.name }}
+                      data={{
+                        workItems: row.period.workItems.map((i) => ({
+                          category: i.category, description: i.description, unit: i.unit,
+                          volume: String(i.volume), unitPrice: String(i.unitPrice), total: String(i.total), moneyKind: i.moneyKind,
+                        })),
+                        materialPurchases: row.period.materialPurchases.map((m) => ({
+                          description: m.description, supplierName: (m as { supplier?: { name: string } | null }).supplier?.name ?? "",
+                          invoiceNumber: m.invoiceNumber ?? "", total: String(m.total), paidAmount: String(m.paidAmount),
+                        })),
+                        laborPayments: row.period.laborPayments.map((lp) => ({
+                          workerName: lp.workerName, role: lp.role ?? "",
+                          days: lp.days ? String(lp.days) : "", hours: lp.hours ? String(lp.hours) : "",
+                          rate: String(lp.rate), total: String(lp.total),
+                        })),
+                        payments: row.period.payments.map((p) => ({
+                          description: p.description, paidAt: p.paidAt.toISOString(), method: p.method, amount: String(p.amount),
+                        })),
+                      }}
+                      totals={{
+                        workTotal: sumMoney(row.period.workItems, "CASH") + sumMoney(row.period.workItems, "INVOICED"),
+                        laborTotal: sumMoney(row.period.laborPayments, "CASH") + sumMoney(row.period.laborPayments, "INVOICED"),
+                        materialTotal: sumMoney(row.period.materialPurchases, "CASH") + sumMoney(row.period.materialPurchases, "INVOICED"),
+                        subtotal,
+                        honorarios: row.honorarios,
+                        total: row.total,
+                        payments: row.payments,
+                      }}
+                    />
+                  </td>
                 </tr>
-              ))}
+                );
+              })}
 
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan={8}>
+                  <td colSpan={9}>
                     <div className="empty-state">Aun no hay semanas para reportar.</div>
                   </td>
                 </tr>
