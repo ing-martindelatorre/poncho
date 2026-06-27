@@ -14,6 +14,7 @@ import { deletePayment } from "./payments/actions";
 import { PaymentForm } from "./payments/payment-form";
 import { deletePhoto } from "./photos/actions";
 import { PhotoForm } from "./photos/photo-form";
+import { ExportWeekPdfButton } from "@/components/export-week-pdf-button";
 import { deleteWorkItem } from "./work-items/actions";
 import { WorkItemForm } from "./work-items/work-item-form";
 
@@ -72,6 +73,7 @@ export default async function WeekPage({ params }: WeekPageProps) {
     notFound();
   }
 
+  const honorariosRate = Number(process.env.HONORARIOS_RATE ?? 0.1);
   const workTotal = sumTotals(period.workItems);
   const laborTotal = sumTotals(period.laborPayments);
   const materialTotal = sumTotals(period.materialPurchases);
@@ -79,7 +81,9 @@ export default async function WeekPage({ params }: WeekPageProps) {
     (total, payment) => total + Number(payment.amount ?? 0),
     0,
   );
-  const total = workTotal + laborTotal + materialTotal;
+  const subtotal = workTotal + laborTotal + materialTotal;
+  const honorarios = subtotal * honorariosRate;
+  const total = subtotal + honorarios;
   const moneyLabels = {
     CASH: "Efectivo",
     INVOICED: "Facturado",
@@ -105,9 +109,72 @@ export default async function WeekPage({ params }: WeekPageProps) {
           <p className="eyebrow">{period.project.name}</p>
           <h1>Semana {period.weekNumber}</h1>
         </div>
-        <a className="button ghost" href={`/projects/${projectId}`}>
-          Volver a obra
-        </a>
+        <div className="row-actions">
+          <a className="button ghost" href={`/projects/${projectId}`}>
+            Volver a obra
+          </a>
+          <a className="button ghost no-print" href={`/projects/${projectId}/weeks/${periodId}/export/csv`}>
+            CSV
+          </a>
+          <a className="button ghost no-print" href={`/projects/${projectId}/weeks/${periodId}/export/excel`}>
+            Excel
+          </a>
+          <ExportWeekPdfButton
+            honorariosRate={honorariosRate}
+            period={{
+              endDate: period.endDate.toISOString(),
+              label: period.label,
+              startDate: period.startDate.toISOString(),
+              weekNumber: period.weekNumber,
+            }}
+            project={{
+              address: period.project.address,
+              clientName: period.project.clientName,
+              name: period.project.name,
+            }}
+            data={{
+              workItems: period.workItems.map((i) => ({
+                category: i.category,
+                description: i.description,
+                unit: i.unit,
+                volume: String(i.volume),
+                unitPrice: String(i.unitPrice),
+                total: String(i.total),
+                moneyKind: i.moneyKind,
+              })),
+              materialPurchases: period.materialPurchases.map((m) => ({
+                description: m.description,
+                supplierName: m.supplier?.name ?? "",
+                invoiceNumber: m.invoiceNumber ?? "",
+                total: String(m.total),
+                paidAmount: String(m.paidAmount),
+              })),
+              laborPayments: period.laborPayments.map((lp) => ({
+                workerName: lp.workerName,
+                role: lp.role ?? "",
+                days: lp.days ? String(lp.days) : "",
+                hours: lp.hours ? String(lp.hours) : "",
+                rate: String(lp.rate),
+                total: String(lp.total),
+              })),
+              payments: period.payments.map((p) => ({
+                description: p.description,
+                paidAt: p.paidAt.toISOString(),
+                method: p.method,
+                amount: String(p.amount),
+              })),
+            }}
+            totals={{
+              workTotal,
+              laborTotal,
+              materialTotal,
+              subtotal,
+              honorarios,
+              total,
+              payments: paymentTotal,
+            }}
+          />
+        </div>
       </header>
 
       <section className="metrics">
