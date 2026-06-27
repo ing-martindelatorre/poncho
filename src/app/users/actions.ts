@@ -3,24 +3,10 @@
 import { UserRole } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { prisma } from "@/lib/db";
+import { booleanFrom, optionalString, requiredString } from "@/lib/form-helpers";
 import { hashPassword } from "@/lib/password";
 import { requireAdmin } from "@/lib/session";
-import { prisma } from "@/lib/db";
-
-function optionalString(value: FormDataEntryValue | null) {
-  const text = String(value ?? "").trim();
-  return text.length > 0 ? text : null;
-}
-
-function requiredString(value: FormDataEntryValue | null, fieldName: string) {
-  const text = optionalString(value);
-
-  if (!text) {
-    throw new Error(`${fieldName} es obligatorio.`);
-  }
-
-  return text;
-}
 
 function userRole(value: FormDataEntryValue | null) {
   const text = String(value ?? UserRole.CAPTURE);
@@ -30,10 +16,6 @@ function userRole(value: FormDataEntryValue | null) {
   }
 
   return text as UserRole;
-}
-
-function booleanFrom(value: FormDataEntryValue | null) {
-  return String(value ?? "true") === "true";
 }
 
 export async function createUser(formData: FormData) {

@@ -6,6 +6,7 @@ export const dynamic = "force-dynamic";
 type DashboardStats = {
   databaseOnline: boolean;
   debt: number;
+  honorarios: number;
   laborTotal: number;
   materialTotal: number;
   openPeriods: number;
@@ -38,22 +39,26 @@ async function getStats(): Promise<DashboardStats> {
         prisma.weeklyPeriod.count(),
         prisma.weeklyPeriod.count({ where: { status: "OPEN" } }),
         prisma.workItem.count(),
-        prisma.materialPurchase.count(),
+        prisma.materialPurchase.count({ where: { weeklyPeriodId: { not: null } } }),
         prisma.photo.count(),
         prisma.workItem.aggregate({ _sum: { total: true } }),
         prisma.laborPayment.aggregate({ _sum: { total: true } }),
-        prisma.materialPurchase.aggregate({ _sum: { total: true } }),
+        prisma.materialPurchase.aggregate({ _sum: { total: true }, where: { weeklyPeriodId: { not: null } } }),
         prisma.payment.aggregate({ _sum: { amount: true } }),
       ]);
     const workTotal = Number(workAggregate._sum.total ?? 0);
     const laborTotal = Number(laborAggregate._sum.total ?? 0);
     const materialTotal = Number(materialAggregate._sum.total ?? 0);
     const paymentsTotal = Number(paymentAggregate._sum.amount ?? 0);
-    const total = workTotal + laborTotal + materialTotal;
+    const subtotal = workTotal + laborTotal + materialTotal;
+    const honorariosRate = Number(process.env.HONORARIOS_RATE ?? 0.1);
+    const honorarios = subtotal * honorariosRate;
+    const total = subtotal + honorarios;
 
     return {
       databaseOnline: true,
       debt: total - paymentsTotal,
+      honorarios,
       laborTotal,
       materialTotal,
       openPeriods,
@@ -70,6 +75,7 @@ async function getStats(): Promise<DashboardStats> {
     return {
       databaseOnline: false,
       debt: 0,
+      honorarios: 0,
       laborTotal: 0,
       materialTotal: 0,
       openPeriods: 0,
@@ -109,6 +115,7 @@ export default async function Home() {
     { label: "Obras", value: stats.projects },
     { label: "Semanas abiertas", value: stats.openPeriods },
     { label: "Total capturado", value: stats.total, money: true },
+    { label: "Honorarios", value: stats.honorarios, money: true },
     { label: "Pagos", value: stats.paymentsTotal, money: true },
     { label: "Deuda estimada", value: stats.debt, money: true },
   ];

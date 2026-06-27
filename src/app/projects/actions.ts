@@ -5,48 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireManagerAccess } from "@/lib/authz";
 import { prisma } from "@/lib/db";
-
-function optionalString(value: FormDataEntryValue | null) {
-  const text = String(value ?? "").trim();
-  return text.length > 0 ? text : null;
-}
-
-function requiredString(value: FormDataEntryValue | null, fieldName: string) {
-  const text = optionalString(value);
-
-  if (!text) {
-    throw new Error(`${fieldName} es obligatorio.`);
-  }
-
-  return text;
-}
-
-function optionalDecimal(value: FormDataEntryValue | null) {
-  const text = String(value ?? "").trim();
-
-  if (!text) {
-    return null;
-  }
-
-  const normalized = text.replace(",", ".");
-  const number = Number(normalized);
-
-  if (!Number.isFinite(number) || number < 0) {
-    throw new Error("El valor numerico no es valido.");
-  }
-
-  return normalized;
-}
-
-function optionalDate(value: FormDataEntryValue | null) {
-  const text = String(value ?? "").trim();
-
-  if (!text) {
-    return null;
-  }
-
-  return new Date(`${text}T00:00:00.000Z`);
-}
+import { optionalDate, optionalDecimal, optionalString, requiredString } from "@/lib/form-helpers";
 
 function projectStatus(value: FormDataEntryValue | null) {
   const text = String(value ?? ProjectStatus.ACTIVE);

@@ -7,7 +7,6 @@ type AppFrameProps = {
     | "imports"
     | "projects"
     | "weeks"
-    | "work-items"
     | "materials"
     | "photos"
     | "users";
@@ -17,10 +16,9 @@ type AppFrameProps = {
 const navItems = [
   { key: "dashboard", href: "/", label: "Dashboard" },
   { key: "projects", href: "/projects", label: "Obras" },
-  { key: "weeks", href: "/projects", label: "Semanas" },
-  { key: "work-items", href: "/projects", label: "Destajos" },
-  { key: "materials", href: "/projects", label: "Materiales" },
-  { key: "photos", href: "/projects", label: "Fotos" },
+  { key: "weeks", href: "/weeks", label: "Semanas" },
+  { key: "materials", href: "/materials", label: "Materiales" },
+  { key: "photos", href: "/photos", label: "Fotos" },
   { key: "catalogs", href: "/catalogs", label: "Catalogos" },
   { key: "imports", href: "/imports", label: "Importar" },
   { key: "users", href: "/users", label: "Usuarios" },

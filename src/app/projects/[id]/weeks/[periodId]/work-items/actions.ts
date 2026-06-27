@@ -1,63 +1,11 @@
 "use server";
 
-import { MoneyKind } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireWriteAccess } from "@/lib/authz";
 import { prisma } from "@/lib/db";
+import { moneyKind, optionalDecimal, optionalString, requiredDecimal, requiredString } from "@/lib/form-helpers";
 import { assertWeeklyPeriodOpen } from "@/lib/periods";
-
-function optionalString(value: FormDataEntryValue | null) {
-  const text = String(value ?? "").trim();
-  return text.length > 0 ? text : null;
-}
-
-function requiredString(value: FormDataEntryValue | null, fieldName: string) {
-  const text = optionalString(value);
-
-  if (!text) {
-    throw new Error(`${fieldName} es obligatorio.`);
-  }
-
-  return text;
-}
-
-function optionalDecimal(value: FormDataEntryValue | null) {
-  const text = String(value ?? "").trim();
-
-  if (!text) {
-    return null;
-  }
-
-  const normalized = text.replace(",", ".");
-  const number = Number(normalized);
-
-  if (!Number.isFinite(number) || number < 0) {
-    throw new Error("El valor numerico no es valido.");
-  }
-
-  return normalized;
-}
-
-function requiredDecimal(value: FormDataEntryValue | null, fieldName: string) {
-  const decimal = optionalDecimal(value);
-
-  if (decimal === null) {
-    throw new Error(`${fieldName} es obligatorio.`);
-  }
-
-  return decimal;
-}
-
-function moneyKind(value: FormDataEntryValue | null) {
-  const text = String(value ?? MoneyKind.CASH);
-
-  if (!Object.values(MoneyKind).includes(text as MoneyKind)) {
-    return MoneyKind.CASH;
-  }
-
-  return text as MoneyKind;
-}
 
 function totalFrom(volume: string, unitPrice: string) {
   return (Number(volume) * Number(unitPrice)).toFixed(2);

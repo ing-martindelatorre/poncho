@@ -4,24 +4,50 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireManagerAccess } from "@/lib/authz";
 import { prisma } from "@/lib/db";
+import { booleanFrom, optionalString, requiredDecimal, requiredString } from "@/lib/form-helpers";
 
-function optionalString(value: FormDataEntryValue | null) {
-  const text = String(value ?? "").trim();
-  return text.length > 0 ? text : null;
+export async function createWorkCatalogItem(formData: FormData) {
+  await requireManagerAccess();
+  await prisma.workCatalog.create({
+    data: {
+      category: requiredString(formData.get("category"), "La categoria"),
+      description: requiredString(formData.get("description"), "La descripcion"),
+      unit: requiredString(formData.get("unit"), "La unidad"),
+      unitPrice: requiredDecimal(formData.get("unitPrice"), "El precio unitario"),
+    },
+  });
+
+  revalidatePath("/catalogs");
+  redirect("/catalogs");
 }
 
-function requiredString(value: FormDataEntryValue | null, fieldName: string) {
-  const text = optionalString(value);
+export async function updateWorkCatalogItem(formData: FormData) {
+  await requireManagerAccess();
+  const id = requiredString(formData.get("id"), "El concepto");
 
-  if (!text) {
-    throw new Error(`${fieldName} es obligatorio.`);
-  }
+  await prisma.workCatalog.update({
+    data: {
+      active: booleanFrom(formData.get("active")),
+      category: requiredString(formData.get("category"), "La categoria"),
+      description: requiredString(formData.get("description"), "La descripcion"),
+      unit: requiredString(formData.get("unit"), "La unidad"),
+      unitPrice: requiredDecimal(formData.get("unitPrice"), "El precio unitario"),
+    },
+    where: { id },
+  });
 
-  return text;
+  revalidatePath("/catalogs");
+  redirect("/catalogs");
 }
 
-function booleanFrom(value: FormDataEntryValue | null) {
-  return String(value ?? "true") === "true";
+export async function deleteWorkCatalogItem(formData: FormData) {
+  await requireManagerAccess();
+  const id = requiredString(formData.get("id"), "El concepto");
+
+  await prisma.workCatalog.delete({ where: { id } });
+
+  revalidatePath("/catalogs");
+  redirect("/catalogs");
 }
 
 export async function createSupplier(formData: FormData) {

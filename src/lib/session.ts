@@ -14,7 +14,15 @@ type SessionPayload = {
 };
 
 function secret() {
-  return process.env.AUTH_SECRET || process.env.BASIC_AUTH_PASSWORD || "dev-secret";
+  const value = process.env.AUTH_SECRET || process.env.BASIC_AUTH_PASSWORD;
+
+  if (!value) {
+    throw new Error(
+      "AUTH_SECRET o BASIC_AUTH_PASSWORD debe estar definido. No se puede firmar sesiones sin un secret.",
+    );
+  }
+
+  return value;
 }
 
 function base64url(input: Buffer | string) {
@@ -67,7 +75,7 @@ export async function setSession(user: { id: string; role: UserRole }) {
     maxAge: maxAgeSeconds,
     path: "/",
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: process.env.DOMAIN_NAME !== undefined && process.env.DOMAIN_NAME !== "localhost",
   });
 }
 
